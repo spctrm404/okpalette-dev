@@ -16,16 +16,9 @@ function App() {
   const [points, setPoints] = useState(initialPoints);
 
   return (
-    <>
-      <Grapher
-        points={points}
-        range={{ min: [-1, -2], max: [1, 2] }}
-        width={400}
-        height={300}
-        thumbSize={40}
-        onChange={setPoints}
-      />
-    </>
+    <div style={{ width: '75%', aspectRatio: '16/9', background: '#f00000' }}>
+      <Grapher points={points} onChange={setPoints} />
+    </div>
     // <>
     //   <GradientGl
     //     l={{

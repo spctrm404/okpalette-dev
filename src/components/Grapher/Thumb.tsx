@@ -1,40 +1,46 @@
 import React from 'react';
 
+type Vec2 = [number, number];
 type ThumbProps = {
-  x: number;
-  y: number;
+  position: Vec2;
   color: string;
-  radius?: number;
+  diameter: number;
   hovered?: boolean;
   pressed?: boolean;
-  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerDown?: (e: React.PointerEvent) => void;
   onPointerEnter?: () => void;
   onPointerLeave?: () => void;
 };
 
 const Thumb = ({
-  x,
-  y,
+  position,
   color,
-  radius = 20,
-  hovered = false,
-  pressed = false,
+  diameter,
+  hovered,
+  pressed,
   onPointerDown,
   onPointerEnter,
   onPointerLeave,
-}: ThumbProps) => (
-  <circle
-    cx={x}
-    cy={y}
-    r={radius}
-    fill={color}
-    style={{ cursor: 'pointer' }}
-    onPointerDown={onPointerDown}
-    onPointerEnter={onPointerEnter}
-    onPointerLeave={onPointerLeave}
-    data-hovered={hovered ? 'true' : undefined}
-    data-pressed={pressed ? 'true' : undefined}
-  />
-);
+}: ThumbProps) => {
+  const [x, y] = position;
+  return (
+    <circle
+      cx={x}
+      cy={y}
+      r={diameter / 2}
+      fill={color}
+      style={{
+        cursor: 'pointer',
+        opacity: hovered ? 0.85 : 1,
+        stroke: pressed ? '#333' : '#fff',
+        strokeWidth: 3,
+        transition: 'opacity 0.15s',
+      }}
+      onPointerDown={onPointerDown}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
+    />
+  );
+};
 
 export default Thumb;

@@ -9,7 +9,7 @@ import {
 import vertexSource from './vertex.glsl';
 import fragmentSource from './fragment.glsl';
 
-type Point = [number, number];
+type Vec2 = [number, number];
 
 type ChannelMappingConfig = {
   source: 'x' | 'y' | 'const';
@@ -18,8 +18,8 @@ type ChannelMappingConfig = {
   fnType?: 'linear' | 'pow' | 'bezier';
   constVal?: number;
   powVal?: number;
-  bezierNormCp1?: Point;
-  bezierNormCp2?: Point;
+  bezierNormCp1?: Vec2;
+  bezierNormCp2?: Vec2;
 };
 
 type GradientGlProps = {
