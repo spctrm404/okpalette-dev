@@ -3,7 +3,7 @@ import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
 import GradientGl from './components/GradientGl/GradientGl';
-import { Grapher } from './components/Grapher/Grapher';
+import { Grapher } from './components/Grapher2/Grapher';
 
 const initialPoints: [number, number][] = [
   [0, 0],
@@ -16,9 +16,48 @@ function App() {
   const [points, setPoints] = useState(initialPoints);
 
   return (
-    <div style={{ width: '75%', aspectRatio: '16/9', background: '#f00000' }}>
-      <Grapher points={points} onChange={setPoints} />
-    </div>
+    <>
+      <div style={{ width: '75%', aspectRatio: '16/9', background: '#f00000' }}>
+        <Grapher path={points} onChange={setPoints} />
+      </div>
+      <div>
+        <ul>
+          {points.map((point, index) => (
+            <li key={index}>
+              Point {index + 1}: ({point[0].toFixed(2)}, {point[1].toFixed(2)})
+            </li>
+          ))}
+        </ul>
+        <div>
+          {points.map((point, index) => (
+            <div>
+              <input
+                key={`input-x-${index}`}
+                type="number"
+                value={point[0].toFixed(2)}
+                step={0.01}
+                onChange={(e) => {
+                  const newPoints = [...points];
+                  newPoints[index][0] = parseFloat(e.target.value);
+                  setPoints(newPoints);
+                }}
+              />
+              <input
+                key={`input-y-${index}`}
+                type="number"
+                value={point[1].toFixed(2)}
+                step={0.01}
+                onChange={(e) => {
+                  const newPoints = [...points];
+                  newPoints[index][1] = parseFloat(e.target.value);
+                  setPoints(newPoints);
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
     // <>
     //   <GradientGl
     //     l={{
