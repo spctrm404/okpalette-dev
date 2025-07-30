@@ -5,16 +5,14 @@ type Vec2 = [number, number];
 
 type GrapherProps = {
   path: Vec2[];
-  range?: [Vec2, Vec2];
-  size?: Vec2;
+  range2d?: [Vec2, Vec2];
   thumbSize?: number;
   onChange?: (points: Vec2[]) => void;
 };
 
 export const Grapher = ({
   path,
-  range,
-  size,
+  range2d,
   thumbSize,
   onChange,
 }: GrapherProps) => {
@@ -31,7 +29,6 @@ export const Grapher = ({
       if (!svgRef.current) return;
 
       const rect = svgRef.current.getBoundingClientRect();
-      console.log('resize');
       setRenderSize((prev) => {
         if (prev[0] !== rect.width || prev[1] !== rect.height)
           return [rect.width, rect.height];
@@ -51,14 +48,72 @@ export const Grapher = ({
     };
   }, []);
 
-  // range, constraint, size 기본값 처리
-  const defaultRange: [Vec2, Vec2] = [
-    [0, 0],
-    [1, 1],
-  ];
-  const usedRange = range || defaultRange;
-  const usedConstraint = [[...usedRange[0]], [...usedRange[1]]] as [Vec2, Vec2];
-  const usedSize = thumbSize || 40;
+  const inferRange2dFromPath = (path: Vec2[]): [Vec2, Vec2] => {
+    if (path.length < 2)
+      return [
+        [0, 0],
+        [1, 1],
+      ];
+    const x0 = path[0][0];
+    const x1 = path[path.length - 1][0];
+    const yVals = path.map((p) => p[1]);
+    const yMin = Math.min(...yVals);
+    const yMax = Math.max(...yVals);
+    return [
+      [x0, yMin],
+      [x1, yMax],
+    ];
+  };
+
+  const inferredRange2dRef = useRef<[Vec2, Vec2]>(inferRange2dFromPath(path));
+  const usedRange2d = range2d || inferredRange2dRef.current;
+
+  // order 계산 함수
+  const getOrder = (
+    index: number,
+    length: number
+  ): 'first' | 'middle' | 'last' => {
+    if (index === 0) return 'first';
+    if (index === length - 1) return 'last';
+    return 'middle';
+  };
+
+  // constraint 계산 함수
+  const getConstraint = (
+    order: 'first' | 'middle' | 'last',
+    index: number,
+    path: Vec2[],
+    usedRange2d: [Vec2, Vec2]
+  ): [Vec2, Vec2] | undefined => {
+    if (order === 'first') {
+      return [
+        [usedRange2d[0][0], usedRange2d[0][1]],
+        [usedRange2d[0][0], usedRange2d[1][1]],
+      ];
+    } else if (order === 'last') {
+      return [
+        [usedRange2d[1][0], usedRange2d[0][1]],
+        [usedRange2d[1][0], usedRange2d[1][1]],
+      ];
+    } else if (order === 'middle' && path.length > 2) {
+      const prevX = path[index - 1][0];
+      const nextX = path[index + 1][0];
+      return [
+        [prevX, usedRange2d[0][1]],
+        [nextX, usedRange2d[1][1]],
+      ];
+    }
+    return undefined;
+  };
+
+  // onChange 핸들러 함수
+  const handleThumbChange = (index: number, newValue: Vec2) => {
+    if (path[index][0] !== newValue[0] || path[index][1] !== newValue[1]) {
+      const newPath = [...path];
+      newPath[index] = newValue;
+      onChange?.(newPath);
+    }
+  };
 
   return (
     <svg
@@ -75,33 +130,18 @@ export const Grapher = ({
       }}
     >
       {path.map((point, index) => {
-        const isFirst = index === 0;
-        const isLast = index === path.length - 1;
-        const order: 'first' | 'middle' | 'last' = isFirst
-          ? 'first'
-          : isLast
-          ? 'last'
-          : 'middle';
+        const order = getOrder(index, path.length);
+        const constraint = getConstraint(order, index, path, usedRange2d);
         return (
           <Thumb
             key={index}
-            tabIndex={index + 1}
-            parentSize={renderSize}
             val={point}
-            range={usedRange}
-            constraint={usedConstraint}
-            size={usedSize}
-            onChange={(newValue) => {
-              // 값이 바뀌었을 때만 업데이트
-              if (
-                path[index][0] !== newValue[0] ||
-                path[index][1] !== newValue[1]
-              ) {
-                const newPath = [...path];
-                newPath[index] = newValue;
-                onChange?.(newPath);
-              }
-            }}
+            range2d={usedRange2d}
+            parentSize={renderSize}
+            size={thumbSize}
+            constraint={constraint}
+            tabIndex={index + 1}
+            onChange={(newValue) => handleThumbChange(index, newValue)}
             order={order}
           />
         );

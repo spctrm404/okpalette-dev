@@ -1,12 +1,12 @@
-import { useMove } from '@react-aria/interactions';
-import { useRef, useCallback, useState, use } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { clamp } from '../../utils/math';
+import { useMove } from '@react-aria/interactions';
 
 type Vec2 = [number, number];
 
 type ThumbProps = {
   val: Vec2;
-  range: [Vec2, Vec2];
+  range2d: [Vec2, Vec2];
   parentSize: Vec2;
   size?: number;
   order?: 'first' | 'middle' | 'last';
@@ -17,7 +17,7 @@ type ThumbProps = {
 
 export const Thumb = ({
   val,
-  range,
+  range2d,
   parentSize,
   size = 40,
   order = 'middle',
@@ -26,7 +26,7 @@ export const Thumb = ({
   onChange,
 }: ThumbProps) => {
   const [parentW, parentH] = parentSize;
-  const [[minValX, minValY], [maxValX, maxValY]] = range;
+  const [[minValX, minValY], [maxValX, maxValY]] = range2d;
   const padding = 0.5 * size;
   const minPosX = padding;
   const minPosY = padding;
@@ -85,17 +85,19 @@ export const Thumb = ({
     [minValX, minValY, maxValX, maxValY, minPosX, maxPosX, minPosY, maxPosY]
   );
 
-  const isDragging = useRef(false);
-  const [internalPos, setInternalPos] = useState<Vec2>(valToPos(val));
-  const displayPos = isDragging.current ? clampPos(internalPos) : valToPos(val);
+  const isDraggingRef = useRef(false);
+  const [internalPosState, setInternalPosState] = useState<Vec2>(valToPos(val));
+  const displayPos = isDraggingRef.current
+    ? clampPos(internalPosState)
+    : valToPos(val);
 
   const { moveProps } = useMove({
     onMoveStart() {
-      isDragging.current = true;
-      setInternalPos(valToPos(val)); // 드래그 시작 시 외부값 기준으로 초기화
+      isDraggingRef.current = true;
+      setInternalPosState(valToPos(val));
     },
     onMove(e) {
-      setInternalPos((prev) => {
+      setInternalPosState((prev) => {
         let newPos = [...prev] as Vec2;
         if (e.pointerType === 'keyboard') newPos = clampPos(newPos);
         newPos[0] += e.deltaX;
@@ -106,8 +108,8 @@ export const Thumb = ({
       });
     },
     onMoveEnd() {
-      isDragging.current = false;
-      setInternalPos(valToPos(val)); // 드래그 끝나면 외부값에 동기화
+      isDraggingRef.current = false;
+      setInternalPosState(valToPos(val));
     },
   });
 
