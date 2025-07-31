@@ -3,7 +3,7 @@ import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
 import GradientGl from './components/GradientGl/GradientGl';
-import { Grapher } from './components/Grapher2/Grapher';
+import Grapher from './components/Grapher/Grapher';
 
 const initialPoints: [number, number][] = [
   [0, 0],
@@ -17,22 +17,29 @@ function App() {
 
   return (
     <>
-      <div style={{ width: '75%', aspectRatio: '16/9', background: '#f00000' }}>
-        <Grapher path={points} onChange={setPoints} />
+      <div style={{ width: '75%', aspectRatio: '16/9' }}>
+        <Grapher
+          path={points}
+          range2d={[
+            [-1, -1],
+            [2, 2],
+          ]}
+          thumbSize={16}
+          onChange={setPoints}
+        />
       </div>
       <div>
         <ul>
           {points.map((point, index) => (
-            <li key={index}>
+            <li key={`point-info-${index}`}>
               Point {index + 1}: ({point[0].toFixed(2)}, {point[1].toFixed(2)})
             </li>
           ))}
         </ul>
         <div>
           {points.map((point, index) => (
-            <div>
+            <div key={`point-input-${index}`}>
               <input
-                key={`input-x-${index}`}
                 type="number"
                 value={point[0].toFixed(2)}
                 step={0.01}
@@ -43,7 +50,6 @@ function App() {
                 }}
               />
               <input
-                key={`input-y-${index}`}
                 type="number"
                 value={point[1].toFixed(2)}
                 step={0.01}
