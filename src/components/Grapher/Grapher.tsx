@@ -120,6 +120,16 @@ const Grapher = ({ path, range2d, thumbSize, onChange }: GrapherProps) => {
         height: '100%',
       }}
     >
+      <defs>
+        <clipPath id="links-clip">
+          <rect
+            x={0.5 * usedThumbSize}
+            y={0.5 * usedThumbSize}
+            width={Math.max(size[0] - usedThumbSize, usedThumbSize)}
+            height={Math.max(size[1] - usedThumbSize, usedThumbSize)}
+          />
+        </clipPath>
+      </defs>
       <rect
         x={0.5 * usedThumbSize}
         y={0.5 * usedThumbSize}
@@ -127,12 +137,19 @@ const Grapher = ({ path, range2d, thumbSize, onChange }: GrapherProps) => {
         height={Math.max(size[1] - usedThumbSize, usedThumbSize)}
         fill="grey"
       />
-      <Links
-        path={path}
-        range2d={usedRange2d}
-        parentSize={size}
-        thumbSize={usedThumbSize}
-      />
+      {path.map((point, idx) => {
+        if (idx === path.length - 1) return null;
+        return (
+          <Links
+            key={`link-${idx}`}
+            path={path}
+            beginIdx={idx}
+            range2d={usedRange2d}
+            parentSize={size}
+            thumbSize={usedThumbSize}
+          />
+        );
+      })}
       {path.map((point, idx) => {
         const order = getOrder(idx, path.length);
         const constraint = getConstraint(order, idx);

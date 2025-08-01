@@ -1,14 +1,21 @@
 import type { Vec2, Mat2 } from './Grapher.types';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 type LinksProps = {
   path: Vec2[];
+  beginIdx: number;
   range2d: Mat2;
   parentSize: Vec2;
   thumbSize?: number;
 };
 
-const Links = ({ path, range2d, parentSize, thumbSize }: LinksProps) => {
+const Links = ({
+  path,
+  beginIdx,
+  range2d,
+  parentSize,
+  thumbSize,
+}: LinksProps) => {
   const [[minValX, minValY], [maxValX, maxValY]] = range2d;
   const [parentW, parentH] = parentSize;
   const usedThumbSize = thumbSize || 40;
@@ -30,35 +37,43 @@ const Links = ({ path, range2d, parentSize, thumbSize }: LinksProps) => {
     [minPosX, minValX, maxValX, maxPosX, minPosY, minValY, maxValY, maxPosY]
   );
 
-  // path 좌표 변환 및 SVG path d 생성
-  const d = path
-    .map((point, idx) => {
-      const pos = valToPos(point);
-      return `${idx === 0 ? 'M' : 'L'} ${pos[0]} ${pos[1]}`;
-    })
-    .join(' ');
+  const beginPos = valToPos(path[beginIdx]);
+  const endPos = valToPos(path[beginIdx + 1]);
+  const d = `M${beginPos[0]},${beginPos[1]} L${endPos[0]},${endPos[1]}`;
+  const pathRef = useRef<SVGPathElement>(null);
 
   return (
     <>
-      <defs>
-        <clipPath id="links-clip">
-          <rect
-            x={padding}
-            y={padding}
-            width={Math.max(parentW - usedThumbSize, usedThumbSize)}
-            height={Math.max(parentH - usedThumbSize, usedThumbSize)}
-          />
-        </clipPath>
-      </defs>
-      <path
-        d={d}
-        fill="transparent"
-        stroke="black"
-        strokeWidth={2}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        clipPath="url(#links-clip)"
-      />
+      <g clipPath="url(#links-clip)">
+        <path
+          ref={pathRef}
+          d={d}
+          fill="none"
+          stroke="black"
+          strokeWidth="1"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+        <path
+          d={d}
+          fill="none"
+          stroke="transparent"
+          strokeWidth="16"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          cursor={'pointer'}
+          onMouseEnter={() => {
+            const path = pathRef.current;
+            if (!path) return;
+            path.style.strokeWidth = '2';
+          }}
+          onMouseLeave={() => {
+            const path = pathRef.current;
+            if (!path) return;
+            path.style.strokeWidth = '1';
+          }}
+        />
+      </g>
     </>
   );
 };
