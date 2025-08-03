@@ -1,13 +1,18 @@
 import type { Vec2, Mat2, Order } from './Grapher.types';
+import {
+  THUMB_DISPLAY_SIZE,
+  THUMB_INTERACTION_SIZE,
+} from './Grapher.constants';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Links from './Links';
 import Thumb from './Thumb';
 
 type GrapherProps = {
   path: Vec2[];
-  range2d?: Mat2;
-  thumbSize?: number;
-  onChange?: (points: Vec2[]) => void;
+  bound2d?: Mat2;
+  thumbInteractionSize?: number;
+  thumbDisplaySize?: number;
+  onChange?: (path: Vec2[]) => void;
 };
 
 const getOrder = (idx: number, length: number): Order => {
@@ -16,21 +21,28 @@ const getOrder = (idx: number, length: number): Order => {
   return 'middle';
 };
 
-const Grapher = ({ path, range2d, thumbSize, onChange }: GrapherProps) => {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const [size, setSize] = useState<Vec2>([0, 0]);
+const Grapher = ({
+  path,
+  bound2d,
+  thumbInteractionSize,
+  thumbDisplaySize,
+  onChange,
+}: GrapherProps) => {
+  const svgElemRef = useRef<SVGSVGElement>(null);
+  const [sizeState, setSizeState] = useState<Vec2>([0, 0]);
 
   useEffect(() => {
-    if (!svgRef.current) return;
+    const svgElem = svgElemRef.current;
+    if (!svgElem) return;
 
-    const svg = svgRef.current;
     let animationFrameId: number | null = null;
 
     const handleResize = () => {
-      if (!svgRef.current) return;
+      const svgElem = svgElemRef.current;
+      if (!svgElem) return;
 
-      const rect = svgRef.current.getBoundingClientRect();
-      setSize((prev) => {
+      const rect = svgElem.getBoundingClientRect();
+      setSizeState((prev) => {
         if (prev[0] !== rect.width || prev[1] !== rect.height)
           return [rect.width, rect.height];
         return prev;
@@ -41,7 +53,7 @@ const Grapher = ({ path, range2d, thumbSize, onChange }: GrapherProps) => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
       animationFrameId = requestAnimationFrame(handleResize);
     });
-    resizeObserver.observe(svg);
+    resizeObserver.observe(svgElem);
     handleResize();
     return () => {
       resizeObserver.disconnect();
@@ -49,50 +61,49 @@ const Grapher = ({ path, range2d, thumbSize, onChange }: GrapherProps) => {
     };
   }, []);
 
-  const getRange2dFromPath = (path: Vec2[]): Mat2 => {
+  const getBound2dFromPath = (): Mat2 => {
     if (path.length < 2)
       return [
         [0, 0],
         [1, 1],
       ];
-    const x0 = path[0][0];
-    const x1 = path[path.length - 1][0];
+    const beginX = path[0][0];
+    const endX = path[path.length - 1][0];
     const yVals = path.map((p) => p[1]);
-    const yMin = Math.min(...yVals);
-    const yMax = Math.max(...yVals);
+    const minY = Math.min(...yVals);
+    const maxY = Math.max(...yVals);
     return [
-      [x0, yMin],
-      [x1, yMax],
+      [beginX, minY],
+      [endX, maxY],
     ];
   };
 
-  const range2dFromPathRef = useRef<Mat2>(getRange2dFromPath(path));
-  const usedRange2d = range2d || range2dFromPathRef.current;
-  const usedThumbSize = thumbSize || 40;
+  const bound2dFromPathRef = useRef<Mat2>(getBound2dFromPath());
+  const usedBound2d = bound2d || bound2dFromPathRef.current;
 
   const getConstraint = useCallback(
     (order: Order, idx: number): Mat2 | undefined => {
       if (order === 'first') {
         return [
-          [usedRange2d[0][0], usedRange2d[0][1]],
-          [usedRange2d[0][0], usedRange2d[1][1]],
+          [usedBound2d[0][0], usedBound2d[0][1]],
+          [usedBound2d[0][0], usedBound2d[1][1]],
         ];
       } else if (order === 'last') {
         return [
-          [usedRange2d[1][0], usedRange2d[0][1]],
-          [usedRange2d[1][0], usedRange2d[1][1]],
+          [usedBound2d[1][0], usedBound2d[0][1]],
+          [usedBound2d[1][0], usedBound2d[1][1]],
         ];
-      } else if (order === 'middle' && path.length > 2) {
+      } else if (order === 'middle') {
         const prevX = path[idx - 1][0];
         const nextX = path[idx + 1][0];
         return [
-          [prevX, usedRange2d[0][1]],
-          [nextX, usedRange2d[1][1]],
+          [prevX, usedBound2d[0][1]],
+          [nextX, usedBound2d[1][1]],
         ];
       }
       return undefined;
     },
-    [path, usedRange2d]
+    [path, usedBound2d]
   );
 
   const handleThumbChange = useCallback(
@@ -106,12 +117,17 @@ const Grapher = ({ path, range2d, thumbSize, onChange }: GrapherProps) => {
     [path, onChange]
   );
 
+  const usedThumbInteractionSize =
+    thumbInteractionSize || THUMB_INTERACTION_SIZE;
+  const usedThumbDisplaySize = thumbDisplaySize || THUMB_DISPLAY_SIZE;
+  const padding = 0.5 * usedThumbInteractionSize;
+
   return (
     <svg
-      ref={svgRef}
+      ref={svgElemRef}
       width="100%"
       height="100%"
-      viewBox={`0 0 ${size[0]} ${size[1]}`}
+      viewBox={`0 0 ${sizeState[0]} ${sizeState[1]}`}
       style={{
         display: 'block',
         touchAction: 'none',
@@ -123,18 +139,30 @@ const Grapher = ({ path, range2d, thumbSize, onChange }: GrapherProps) => {
       <defs>
         <clipPath id="links-clip">
           <rect
-            x={0.5 * usedThumbSize}
-            y={0.5 * usedThumbSize}
-            width={Math.max(size[0] - usedThumbSize, usedThumbSize)}
-            height={Math.max(size[1] - usedThumbSize, usedThumbSize)}
+            x={padding}
+            y={padding}
+            width={Math.max(
+              sizeState[0] - usedThumbInteractionSize,
+              usedThumbInteractionSize
+            )}
+            height={Math.max(
+              sizeState[1] - usedThumbInteractionSize,
+              usedThumbInteractionSize
+            )}
           />
         </clipPath>
       </defs>
       <rect
-        x={0.5 * usedThumbSize}
-        y={0.5 * usedThumbSize}
-        width={Math.max(size[0] - usedThumbSize, usedThumbSize)}
-        height={Math.max(size[1] - usedThumbSize, usedThumbSize)}
+        x={padding}
+        y={padding}
+        width={Math.max(
+          sizeState[0] - usedThumbInteractionSize,
+          usedThumbInteractionSize
+        )}
+        height={Math.max(
+          sizeState[1] - usedThumbInteractionSize,
+          usedThumbInteractionSize
+        )}
         fill="grey"
       />
       {path.map((point, idx) => {
@@ -144,9 +172,9 @@ const Grapher = ({ path, range2d, thumbSize, onChange }: GrapherProps) => {
             key={`link-${idx}`}
             path={path}
             beginIdx={idx}
-            range2d={usedRange2d}
-            parentSize={size}
-            thumbSize={usedThumbSize}
+            range2d={usedBound2d}
+            parentSize={sizeState}
+            thumbSize={usedThumbInteractionSize}
           />
         );
       })}
@@ -157,10 +185,11 @@ const Grapher = ({ path, range2d, thumbSize, onChange }: GrapherProps) => {
           <Thumb
             key={`thumb-${idx}`}
             val={point}
-            range2d={usedRange2d}
-            parentSize={size}
-            size={thumbSize}
-            constraint={constraint}
+            valBound2d={usedBound2d}
+            parentSize={sizeState}
+            interactionSize={usedThumbInteractionSize}
+            displaySize={usedThumbDisplaySize}
+            valConstraint2d={constraint}
             tabIndex={idx + 1}
             onChange={(newValue) => handleThumbChange(idx, newValue)}
             order={order}

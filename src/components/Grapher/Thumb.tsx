@@ -1,58 +1,90 @@
 import type { Vec2, Mat2, Order } from './Grapher.types';
+import {
+  THUMB_DISPLAY_SIZE,
+  THUMB_INTERACTION_SIZE,
+} from './Grapher.constants';
 import { useCallback, useRef, useState } from 'react';
 import { clamp } from '../../utils/math';
 import { mergeProps, useHover, useMove, usePress } from 'react-aria';
 
 type ThumbProps = {
   val: Vec2;
-  range2d: Mat2;
+  valBound2d: Mat2;
   parentSize: Vec2;
-  size?: number;
+  interactionSize?: number;
+  displaySize?: number;
   order?: Order;
-  constraint?: Mat2;
+  valConstraint2d?: Mat2;
   tabIndex: number;
   onChange?: (val: Vec2) => void;
 };
 
-const VISUAL_SIZE = 8;
-
 const Thumb = ({
   val,
-  range2d,
+  valBound2d,
   parentSize,
-  size,
+  interactionSize,
+  displaySize,
   order,
-  constraint,
+  valConstraint2d,
   tabIndex,
   onChange,
 }: ThumbProps) => {
-  const [[minValX, minValY], [maxValX, maxValY]] = range2d;
+  const [[minValX, minValY], [maxValX, maxValY]] = valBound2d;
+  const valRangeX = maxValX - minValX;
+  const valRangeY = maxValY - minValY;
   const [parentW, parentH] = parentSize;
-  const usedSize = size || 40;
-  const usedOder = order || 'middle';
-  const padding = 0.5 * usedSize;
+  const usedInteractionSize = interactionSize || THUMB_INTERACTION_SIZE;
+  const padding = 0.5 * usedInteractionSize;
   const minPosX = padding;
   const minPosY = padding;
   const maxPosX = parentW - padding;
   const maxPosY = parentH - padding;
+  const posRangeX = maxPosX - minPosX;
+  const posRangeY = maxPosY - minPosY;
 
   const valToPos = useCallback(
-    (val: Vec2): Vec2 => {
+    ([valX, valY]: Vec2): Vec2 => {
       return [
-        minPosX +
-          ((val[0] - minValX) / (maxValX - minValX)) * (maxPosX - minPosX),
-        minPosY +
-          (1 - (val[1] - minValY) / (maxValY - minValY)) * (maxPosY - minPosY),
+        minPosX + ((valX - minValX) / valRangeX) * posRangeX,
+        minPosY + (1 - (valY - minValY) / valRangeY) * posRangeY,
       ];
     },
-    [minPosX, minValX, maxValX, maxPosX, minPosY, minValY, maxValY, maxPosY]
+    [
+      minPosX,
+      minPosY,
+      minValX,
+      minValY,
+      posRangeX,
+      posRangeY,
+      valRangeX,
+      valRangeY,
+    ]
+  );
+  const posToVal = useCallback(
+    ([posX, posY]: Vec2): Vec2 => {
+      return [
+        minValX + ((posX - minPosX) / posRangeX) * valRangeX,
+        minValY + (1 - (posY - minPosY) / posRangeY) * valRangeY,
+      ];
+    },
+    [
+      minPosX,
+      minPosY,
+      minValX,
+      minValY,
+      posRangeX,
+      posRangeY,
+      valRangeX,
+      valRangeY,
+    ]
   );
 
-  const [constraintMinPosX, constraintMaxPosY] = constraint
-    ? valToPos(constraint[0])
+  const [constraintMinPosX, constraintMaxPosY] = valConstraint2d
+    ? valToPos(valConstraint2d[0])
     : [minPosX, maxPosY];
-  const [constraintMaxPosX, constraintMinPosY] = constraint
-    ? valToPos(constraint[1])
+  const [constraintMaxPosX, constraintMinPosY] = valConstraint2d
+    ? valToPos(valConstraint2d[1])
     : [maxPosX, minPosY];
 
   const clampPos = useCallback(
@@ -77,17 +109,8 @@ const Thumb = ({
     ]
   );
 
-  const posToVal = useCallback(
-    (pos: Vec2): Vec2 => {
-      return [
-        minValX +
-          ((pos[0] - minPosX) / (maxPosX - minPosX)) * (maxValX - minValX),
-        minValY +
-          (1 - (pos[1] - minPosY) / (maxPosY - minPosY)) * (maxValY - minValY),
-      ];
-    },
-    [minValX, minValY, maxValX, maxValY, minPosX, maxPosX, minPosY, maxPosY]
-  );
+  const usedDisplaySize = displaySize || THUMB_DISPLAY_SIZE;
+  const usedOrder = order || 'middle';
 
   const isMovingRef = useRef(false);
   const [internalPosState, setInternalPosState] = useState<Vec2>(valToPos(val));
@@ -126,7 +149,7 @@ const Thumb = ({
         if (onChange) {
           const clampedPos = clampPos(newPos);
           const val = posToVal(clampedPos);
-          queueMicrotask(() => onChange(val));
+          onChange(val);
         }
         return newPos;
       });
@@ -139,15 +162,15 @@ const Thumb = ({
 
   const racProps = mergeProps(hoverProps, pressProps, moveProps);
 
-  const visualRef = useRef<SVGCircleElement>(null);
+  const displayElemRef = useRef<SVGCircleElement>(null);
 
   return (
     <g>
       <circle
-        ref={visualRef}
+        ref={displayElemRef}
         cx={usedPos[0]}
         cy={usedPos[1]}
-        r={0.5 * VISUAL_SIZE}
+        r={0.5 * usedDisplaySize}
         fill="#fff"
         stroke="transparent"
         strokeWidth="0"
@@ -157,7 +180,7 @@ const Thumb = ({
         tabIndex={tabIndex}
         cx={usedPos[0]}
         cy={usedPos[1]}
-        r={usedSize / 2}
+        r={usedInteractionSize / 2}
         fill="transparent"
         stroke="none"
       />
