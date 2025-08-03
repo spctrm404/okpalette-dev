@@ -92,8 +92,6 @@ const Thumb = ({
     ]
   );
 
-  const usedDisplaySize = displaySize || THUMB_DISPLAY_SIZE;
-  const usedOrder = order || 'middle';
   const isMovingRef = useRef(false);
   const [internalPosState, setInternalPosState] = useState<Vec2>(valToPos(val));
   useLayoutEffect(() => {
@@ -149,6 +147,8 @@ const Thumb = ({
 
   const racProps = mergeProps(hoverProps, pressProps, moveProps, focusProps);
 
+  const usedDisplaySize = displaySize || THUMB_DISPLAY_SIZE;
+  const usedOrder = order || 'middle';
   const usedPos = isMovingRef.current
     ? clampPos(internalPosState)
     : valToPos(val);

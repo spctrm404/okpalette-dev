@@ -28,39 +28,6 @@ const Grapher = ({
   thumbDisplaySize,
   onChange,
 }: GrapherProps) => {
-  const svgElemRef = useRef<SVGSVGElement>(null);
-  const [sizeState, setSizeState] = useState<Vec2>([0, 0]);
-
-  useEffect(() => {
-    const svgElem = svgElemRef.current;
-    if (!svgElem) return;
-
-    let animationFrameId: number | null = null;
-
-    const handleResize = () => {
-      const svgElem = svgElemRef.current;
-      if (!svgElem) return;
-
-      const rect = svgElem.getBoundingClientRect();
-      setSizeState((prev) => {
-        if (prev[0] !== rect.width || prev[1] !== rect.height)
-          return [rect.width, rect.height];
-        return prev;
-      });
-    };
-
-    const resizeObserver = new window.ResizeObserver(() => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      animationFrameId = requestAnimationFrame(handleResize);
-    });
-    resizeObserver.observe(svgElem);
-    handleResize();
-    return () => {
-      resizeObserver.disconnect();
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
   function getBound2dFromPath(): Mat2 {
     if (path.length < 2)
       return [
@@ -80,7 +47,6 @@ const Grapher = ({
 
   const bound2dFromPathRef = useRef<Mat2>(getBound2dFromPath());
   const usedBound2d = bound2d || bound2dFromPathRef.current;
-
   const getConstraint = useCallback(
     (order: Order, idx: number): Mat2 | undefined => {
       if (order === 'first') {
@@ -116,6 +82,38 @@ const Grapher = ({
     },
     [path, onChange]
   );
+
+  const svgElemRef = useRef<SVGSVGElement>(null);
+  const [sizeState, setSizeState] = useState<Vec2>([0, 0]);
+  useEffect(() => {
+    const svgElem = svgElemRef.current;
+    if (!svgElem) return;
+
+    let animationFrameId: number | null = null;
+
+    const handleResize = () => {
+      const svgElem = svgElemRef.current;
+      if (!svgElem) return;
+
+      const rect = svgElem.getBoundingClientRect();
+      setSizeState((prev) => {
+        if (prev[0] !== rect.width || prev[1] !== rect.height)
+          return [rect.width, rect.height];
+        return prev;
+      });
+    };
+
+    const resizeObserver = new window.ResizeObserver(() => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(handleResize);
+    });
+    resizeObserver.observe(svgElem);
+    handleResize();
+    return () => {
+      resizeObserver.disconnect();
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
 
   const usedThumbInteractionSize =
     thumbInteractionSize || THUMB_INTERACTION_SIZE;
