@@ -1,7 +1,7 @@
 import type { Vec2, Mat2, Order } from './Grapher.types';
 import { useCallback, useRef, useState } from 'react';
 import { clamp } from '../../utils/math';
-import { useMove } from '@react-aria/interactions';
+import { mergeProps, useHover, useMove, usePress } from 'react-aria';
 
 type ThumbProps = {
   val: Vec2;
@@ -89,54 +89,77 @@ const Thumb = ({
     [minValX, minValY, maxValX, maxValY, minPosX, maxPosX, minPosY, maxPosY]
   );
 
-  const isDraggingRef = useRef(false);
+  const isMovingRef = useRef(false);
   const [internalPosState, setInternalPosState] = useState<Vec2>(valToPos(val));
-  const displayPos = isDraggingRef.current
+  const usedPos = isMovingRef.current
     ? clampPos(internalPosState)
     : valToPos(val);
 
+  const { hoverProps, isHovered } = useHover({
+    onHoverStart: () => {
+      // console.log('hover start');`
+    },
+    onHoverEnd: () => {
+      // console.log('hover end');`
+    },
+  });
+
+  const { pressProps, isPressed } = usePress({
+    onPressStart: () => {
+      // console.log('press start');`
+    },
+    onPressEnd: () => {
+      // console.log('press end');`
+    },
+    onPress: () => {},
+  });
+
   const { moveProps } = useMove({
     onMoveStart() {
-      isDraggingRef.current = true;
-      setInternalPosState(valToPos(val));
+      isMovingRef.current = true;
     },
     onMove(e) {
       setInternalPosState((prev) => {
-        let newPos = [...prev] as Vec2;
-        if (e.pointerType === 'keyboard') newPos = clampPos(newPos);
+        const newPos = e.pointerType === 'keyboard' ? clampPos(prev) : prev;
         newPos[0] += e.deltaX;
         newPos[1] += e.deltaY;
-        const clamped = clampPos(newPos);
-        onChange?.(posToVal(clamped));
+        if (onChange) {
+          const clampedPos = clampPos(newPos);
+          const val = posToVal(clampedPos);
+          queueMicrotask(() => onChange(val));
+        }
         return newPos;
       });
     },
     onMoveEnd() {
-      isDraggingRef.current = false;
+      isMovingRef.current = false;
       setInternalPosState(valToPos(val));
     },
   });
 
+  const racProps = mergeProps(hoverProps, pressProps, moveProps);
+
+  const visualRef = useRef<SVGCircleElement>(null);
+
   return (
     <g>
-      <rect
-        x={displayPos[0] - 0.5 * VISUAL_SIZE}
-        y={displayPos[1] - 0.5 * VISUAL_SIZE}
-        width={VISUAL_SIZE}
-        height={VISUAL_SIZE}
+      <circle
+        ref={visualRef}
+        cx={usedPos[0]}
+        cy={usedPos[1]}
+        r={0.5 * VISUAL_SIZE}
         fill="#fff"
         stroke="transparent"
-        strokeWidth={0}
+        strokeWidth="0"
       />
       <circle
-        {...moveProps}
+        {...racProps}
         tabIndex={tabIndex}
-        cx={displayPos[0]}
-        cy={displayPos[1]}
+        cx={usedPos[0]}
+        cy={usedPos[1]}
         r={usedSize / 2}
-        fill="oklch(0.9 0.1 0 / .5)"
-        stroke="transparent"
-        strokeWidth={0}
+        fill="transparent"
+        stroke="none"
       />
     </g>
   );
