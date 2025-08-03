@@ -15,11 +15,11 @@ type GrapherProps = {
   onChange?: (path: Vec2[]) => void;
 };
 
-const getOrder = (idx: number, length: number): Order => {
+function getOrder(idx: number, length: number): Order {
   if (idx === 0) return 'first';
   if (idx === length - 1) return 'last';
   return 'middle';
-};
+}
 
 const Grapher = ({
   path,
@@ -61,22 +61,22 @@ const Grapher = ({
     };
   }, []);
 
-  const getBound2dFromPath = (): Mat2 => {
+  function getBound2dFromPath(): Mat2 {
     if (path.length < 2)
       return [
         [0, 0],
         [1, 1],
       ];
-    const beginX = path[0][0];
-    const endX = path[path.length - 1][0];
+    const firstX = path[0][0];
+    const lastX = path[path.length - 1][0];
     const yVals = path.map((p) => p[1]);
     const minY = Math.min(...yVals);
     const maxY = Math.max(...yVals);
     return [
-      [beginX, minY],
-      [endX, maxY],
+      [firstX, minY],
+      [lastX, maxY],
     ];
-  };
+  }
 
   const bound2dFromPathRef = useRef<Mat2>(getBound2dFromPath());
   const usedBound2d = bound2d || bound2dFromPathRef.current;
@@ -193,6 +193,7 @@ const Grapher = ({
             tabIndex={idx + 1}
             onChange={(newValue) => handleThumbChange(idx, newValue)}
             order={order}
+            debug={idx === 1}
           />
         );
       })}

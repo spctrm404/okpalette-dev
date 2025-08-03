@@ -3,9 +3,9 @@ import {
   THUMB_DISPLAY_SIZE,
   THUMB_INTERACTION_SIZE,
 } from './Grapher.constants';
-import { useCallback, useRef, useState } from 'react';
-import { clamp } from '../../utils/math';
-import { mergeProps, useHover, useMove, usePress } from 'react-aria';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { clamp, map } from '../../utils/math';
+import { mergeProps, useFocus, useHover, useMove, usePress } from 'react-aria';
 
 type ThumbProps = {
   val: Vec2;
@@ -17,6 +17,7 @@ type ThumbProps = {
   valConstraint2d?: Mat2;
   tabIndex: number;
   onChange?: (val: Vec2) => void;
+  debug?: boolean;
 };
 
 const Thumb = ({
@@ -29,10 +30,9 @@ const Thumb = ({
   valConstraint2d,
   tabIndex,
   onChange,
+  debug,
 }: ThumbProps) => {
-  const [[minValX, minValY], [maxValX, maxValY]] = valBound2d;
-  const valRangeX = maxValX - minValX;
-  const valRangeY = maxValY - minValY;
+  const [minVal2d, maxVal2d] = valBound2d;
   const [parentW, parentH] = parentSize;
   const usedInteractionSize = interactionSize || THUMB_INTERACTION_SIZE;
   const padding = 0.5 * usedInteractionSize;
@@ -40,44 +40,28 @@ const Thumb = ({
   const minPosY = padding;
   const maxPosX = parentW - padding;
   const maxPosY = parentH - padding;
-  const posRangeX = maxPosX - minPosX;
-  const posRangeY = maxPosY - minPosY;
-
   const valToPos = useCallback(
-    ([valX, valY]: Vec2): Vec2 => {
-      return [
-        minPosX + ((valX - minValX) / valRangeX) * posRangeX,
-        minPosY + (1 - (valY - minValY) / valRangeY) * posRangeY,
-      ];
+    (val: Vec2): Vec2 => {
+      return map(
+        val,
+        minVal2d,
+        maxVal2d,
+        [minPosX, maxPosY],
+        [maxPosX, minPosY]
+      ) as Vec2;
     },
-    [
-      minPosX,
-      minPosY,
-      minValX,
-      minValY,
-      posRangeX,
-      posRangeY,
-      valRangeX,
-      valRangeY,
-    ]
+    [minPosX, minPosY, maxPosX, maxPosY, maxVal2d, minVal2d]
   );
   const posToVal = useCallback(
-    ([posX, posY]: Vec2): Vec2 => {
-      return [
-        minValX + ((posX - minPosX) / posRangeX) * valRangeX,
-        minValY + (1 - (posY - minPosY) / posRangeY) * valRangeY,
-      ];
-    },
-    [
-      minPosX,
-      minPosY,
-      minValX,
-      minValY,
-      posRangeX,
-      posRangeY,
-      valRangeX,
-      valRangeY,
-    ]
+    (pos: Vec2): Vec2 =>
+      map(
+        pos,
+        [minPosX, maxPosY],
+        [maxPosX, minPosY],
+        minVal2d,
+        maxVal2d
+      ) as Vec2,
+    [minPosX, minPosY, maxPosX, maxPosY, maxVal2d, minVal2d]
   );
 
   const [constraintMinPosX, constraintMaxPosY] = valConstraint2d
@@ -86,7 +70,6 @@ const Thumb = ({
   const [constraintMaxPosX, constraintMinPosY] = valConstraint2d
     ? valToPos(valConstraint2d[1])
     : [maxPosX, minPosY];
-
   const clampPos = useCallback(
     (pos: Vec2): Vec2 => {
       const clampedPos = clamp(pos, [minPosX, minPosY], [maxPosX, maxPosY]);
@@ -111,63 +94,77 @@ const Thumb = ({
 
   const usedDisplaySize = displaySize || THUMB_DISPLAY_SIZE;
   const usedOrder = order || 'middle';
-
   const isMovingRef = useRef(false);
   const [internalPosState, setInternalPosState] = useState<Vec2>(valToPos(val));
-  const usedPos = isMovingRef.current
-    ? clampPos(internalPosState)
-    : valToPos(val);
+  useLayoutEffect(() => {
+    if (isMovingRef.current) return;
+
+    setInternalPosState(valToPos(val));
+  }, [val, valToPos]);
+
+  const [isFocusedState, setIsFocusedState] = useState(false);
 
   const { hoverProps, isHovered } = useHover({
-    onHoverStart: () => {
-      // console.log('hover start');`
-    },
-    onHoverEnd: () => {
-      // console.log('hover end');`
-    },
+    onHoverStart: () => {},
+    onHoverEnd: () => {},
   });
-
   const { pressProps, isPressed } = usePress({
-    onPressStart: () => {
-      // console.log('press start');`
-    },
-    onPressEnd: () => {
-      // console.log('press end');`
-    },
+    onPressStart: () => {},
+    onPressEnd: () => {},
     onPress: () => {},
   });
-
   const { moveProps } = useMove({
     onMoveStart() {
       isMovingRef.current = true;
     },
     onMove(e) {
-      setInternalPosState((prev) => {
-        const newPos = e.pointerType === 'keyboard' ? clampPos(prev) : prev;
-        newPos[0] += e.deltaX;
-        newPos[1] += e.deltaY;
-        if (onChange) {
-          const clampedPos = clampPos(newPos);
-          const val = posToVal(clampedPos);
-          onChange(val);
-        }
-        return newPos;
-      });
+      const newPos =
+        e.pointerType === 'keyboard'
+          ? clampPos(internalPosState)
+          : internalPosState;
+      newPos[0] += e.deltaX;
+      newPos[1] += e.deltaY;
+      setInternalPosState(newPos);
+      const clampedPos = clampPos(newPos);
+      const newVal = posToVal(clampedPos);
+      onChange?.(newVal);
     },
     onMoveEnd() {
       isMovingRef.current = false;
-      setInternalPosState(valToPos(val));
+      const newPos = clampPos(internalPosState);
+      const newVal = posToVal(newPos);
+      setInternalPosState(valToPos(newVal));
+      onChange?.(newVal);
     },
   });
+  const { focusProps } = useFocus({
+    onFocus: () => {
+      setIsFocusedState(true);
+    },
+    onBlur: () => {
+      setIsFocusedState(false);
+    },
+    onFocusChange: () => {},
+  });
 
-  const racProps = mergeProps(hoverProps, pressProps, moveProps);
+  const racProps = mergeProps(hoverProps, pressProps, moveProps, focusProps);
 
-  const displayElemRef = useRef<SVGCircleElement>(null);
+  const usedPos = isMovingRef.current
+    ? clampPos(internalPosState)
+    : valToPos(val);
+
+  const usedIsHovered = isHovered || isMovingRef.current;
+  const usedIsPressed = isPressed || isMovingRef.current;
+  const usedIsFocused = isFocusedState;
 
   return (
-    <g>
+    <g
+      data-hovered={usedIsHovered}
+      data-pressed={usedIsPressed}
+      data-focused={usedIsFocused}
+      data-order={usedOrder}
+    >
       <circle
-        ref={displayElemRef}
         cx={usedPos[0]}
         cy={usedPos[1]}
         r={0.5 * usedDisplaySize}
@@ -180,9 +177,10 @@ const Thumb = ({
         tabIndex={tabIndex}
         cx={usedPos[0]}
         cy={usedPos[1]}
-        r={usedInteractionSize / 2}
+        r={0.5 * usedInteractionSize}
         fill="transparent"
         stroke="none"
+        cursor="pointer"
       />
     </g>
   );
