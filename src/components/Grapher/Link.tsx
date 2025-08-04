@@ -1,4 +1,4 @@
-import type { Vec2, Mat2 } from './Grapher.types';
+import type { Vec2, Mat2, Path } from './Grapher.types';
 import { THUMB_INTERACTION_SIZE } from './Grapher.constants';
 import { map } from '../../utils/math';
 import { useCallback } from 'react';
@@ -7,16 +7,16 @@ import classes from './_Link.module.scss';
 import clsx from 'clsx';
 
 type LinksProps = {
-  beginVals: Vec2;
-  endVals: Vec2;
+  beginPath: Path;
+  endPath: Path;
   valsBound: Mat2;
   parentSize: Vec2;
   thumbSize?: number;
 };
 
 const Link = ({
-  beginVals,
-  endVals,
+  beginPath,
+  endPath,
   valsBound,
   parentSize,
   thumbSize,
@@ -42,35 +42,45 @@ const Link = ({
     [minPosX, minPosY, maxPosX, maxPosY, maxVals, minVals]
   );
 
-  const beginPos = valsToPos(beginVals);
-  const endPos = valsToPos(endVals);
-  const trimLine = (
-    [beginX, beginY]: Vec2,
-    [endX, endY]: Vec2,
-    trimLength: number
-  ): [Vec2, Vec2] => {
-    const dx = endX - beginX;
-    const dy = endY - beginY;
-    const len = Math.sqrt(dx * dx + dy * dy);
-    if (len === 0 || trimLength === 0 || len < trimLength)
-      return [
-        [beginX, beginY],
-        [endX, endY],
-      ];
-    const ux = dx / len;
-    const uy = dy / len;
-    const newBegin: Vec2 = [beginX + ux * trimLength, beginY + uy * trimLength];
-    const newEnd: Vec2 = [endX - ux * trimLength, endY - uy * trimLength];
-    return [newBegin, newEnd];
+  const d = () => {
+    const { type } = beginPath;
+    const beginPos = valsToPos(beginPath.point);
+    const endPos = valsToPos(endPath.point);
+    const [beginX, beginY] = beginPos;
+    const [endX, endY] = endPos;
+    if (type === 'linear') {
+      return `M${beginX},${beginY}L${endX},${endY}`;
+    } else if (type === 'bezier') {
+      const { relativeControlPoint1, relativeControlPoint2 } = beginPath;
+      const [c1X, c1Y] = map(
+        relativeControlPoint1,
+        [0, 0],
+        [1, 1],
+        beginPos,
+        endPos
+      );
+      const [c2X, c2Y] = map(
+        relativeControlPoint2,
+        [0, 0],
+        [1, 1],
+        beginPos,
+        endPos
+      );
+      return `M${beginX},${beginY}C${c1X},${c1Y},${c2X},${c2Y},${endX},${endY}`;
+    } else if (type === 'pow') {
+      const exponent = beginPath.exponent;
+      const resolution = 64;
+      let d = `M${beginX},${beginY}`;
+      for (let n = 1; n <= resolution; ++n) {
+        const normalizedX = n / resolution;
+        const powedY = Math.pow(normalizedX, exponent);
+        const x = map(normalizedX, 0, 1, beginX, endX);
+        const y = map(powedY, 0, 1, beginY, endY);
+        d += `L${x},${y}`;
+      }
+      return d;
+    }
   };
-
-  // const [[beginX, beginY], [endX, endY]] = trimLine(
-  //   beginPos,
-  //   endPos,
-  //   usedThumbSize / 2
-  // );
-  const [[beginX, beginY], [endX, endY]] = [beginPos, endPos];
-  const d = `M${beginX},${beginY} L${endX},${endY}`;
 
   const { hoverProps, isHovered } = useHover({
     onHoverStart: () => {},
@@ -94,7 +104,7 @@ const Link = ({
       >
         <path
           className={clsx(classes.display)}
-          d={d}
+          d={d()}
           fill="none"
           stroke="black"
           strokeWidth="1"
@@ -104,7 +114,7 @@ const Link = ({
         <path
           className={clsx(classes.interaction)}
           {...racProps}
-          d={d}
+          d={d()}
           fill="none"
           stroke="transparent"
           strokeWidth="16"
