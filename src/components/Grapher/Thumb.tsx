@@ -3,38 +3,36 @@ import {
   THUMB_DISPLAY_SIZE,
   THUMB_INTERACTION_SIZE,
 } from './Grapher.constants';
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { clamp, map } from '../../utils/math';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { mergeProps, useHover, useMove, usePress } from 'react-aria';
 import classes from './_Thumb.module.scss';
 import clsx from 'clsx';
 
 type ThumbProps = {
-  val: Vec2;
-  valBound2d: Mat2;
+  vals: Vec2;
+  valsBound: Mat2;
   parentSize: Vec2;
   interactionSize?: number;
   displaySize?: number;
   order?: Order;
-  valConstraint2d?: Mat2;
+  valsConstraint?: Mat2;
   tabIndex: number;
   onChange?: (val: Vec2) => void;
-  debug?: boolean;
 };
 
 const Thumb = ({
-  val,
-  valBound2d,
+  vals,
+  valsBound,
   parentSize,
   interactionSize,
   displaySize,
   order,
-  valConstraint2d,
+  valsConstraint,
   tabIndex,
   onChange,
-  debug,
 }: ThumbProps) => {
-  const [minVal2d, maxVal2d] = valBound2d;
+  const [minVals, maxVals] = valsBound;
   const [parentW, parentH] = parentSize;
   const usedInteractionSize = interactionSize || THUMB_INTERACTION_SIZE;
   const padding = 0.5 * usedInteractionSize;
@@ -42,35 +40,35 @@ const Thumb = ({
   const minPosY = padding;
   const maxPosX = parentW - padding;
   const maxPosY = parentH - padding;
-  const valToPos = useCallback(
-    (val: Vec2): Vec2 => {
+  const valsToPos = useCallback(
+    (vals: Vec2): Vec2 => {
       return map(
-        val,
-        minVal2d,
-        maxVal2d,
+        vals,
+        minVals,
+        maxVals,
         [minPosX, maxPosY],
         [maxPosX, minPosY]
       ) as Vec2;
     },
-    [minPosX, minPosY, maxPosX, maxPosY, maxVal2d, minVal2d]
+    [minPosX, minPosY, maxPosX, maxPosY, maxVals, minVals]
   );
-  const posToVal = useCallback(
+  const posToVals = useCallback(
     (pos: Vec2): Vec2 =>
       map(
         pos,
         [minPosX, maxPosY],
         [maxPosX, minPosY],
-        minVal2d,
-        maxVal2d
+        minVals,
+        maxVals
       ) as Vec2,
-    [minPosX, minPosY, maxPosX, maxPosY, maxVal2d, minVal2d]
+    [minPosX, minPosY, maxPosX, maxPosY, maxVals, minVals]
   );
 
-  const [constraintMinPosX, constraintMaxPosY] = valConstraint2d
-    ? valToPos(valConstraint2d[0])
+  const [constraintMinPosX, constraintMaxPosY] = valsConstraint
+    ? valsToPos(valsConstraint[0])
     : [minPosX, maxPosY];
-  const [constraintMaxPosX, constraintMinPosY] = valConstraint2d
-    ? valToPos(valConstraint2d[1])
+  const [constraintMaxPosX, constraintMinPosY] = valsConstraint
+    ? valsToPos(valsConstraint[1])
     : [maxPosX, minPosY];
   const clampPos = useCallback(
     (pos: Vec2): Vec2 => {
@@ -95,12 +93,14 @@ const Thumb = ({
   );
 
   const isMovingRef = useRef(false);
-  const [internalPosState, setInternalPosState] = useState<Vec2>(valToPos(val));
+  const [internalPosState, setInternalPosState] = useState<Vec2>(
+    valsToPos(vals)
+  );
   useLayoutEffect(() => {
     if (isMovingRef.current) return;
 
-    setInternalPosState(valToPos(val));
-  }, [val, valToPos]);
+    setInternalPosState(valsToPos(vals));
+  }, [vals, valsToPos]);
 
   const { hoverProps, isHovered } = useHover({
     onHoverStart: () => {},
@@ -124,14 +124,14 @@ const Thumb = ({
       newPos[1] += e.deltaY;
       setInternalPosState(newPos);
       const clampedPos = clampPos(newPos);
-      const newVal = posToVal(clampedPos);
+      const newVal = posToVals(clampedPos);
       onChange?.(newVal);
     },
     onMoveEnd() {
       isMovingRef.current = false;
       const newPos = clampPos(internalPosState);
-      const newVal = posToVal(newPos);
-      setInternalPosState(valToPos(newVal));
+      const newVal = posToVals(newPos);
+      setInternalPosState(valsToPos(newVal));
       onChange?.(newVal);
     },
   });
@@ -142,7 +142,7 @@ const Thumb = ({
   const usedOrder = order || 'middle';
   const usedPos = isMovingRef.current
     ? clampPos(internalPosState)
-    : valToPos(val);
+    : valsToPos(vals);
 
   const usedIsHovered = isHovered || isMovingRef.current;
   const usedIsPressed = isPressed || isMovingRef.current;

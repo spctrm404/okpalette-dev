@@ -1,0 +1,15 @@
+.container {
+  --stroke-width: 2px;
+
+  &[data-hovered='true'] {
+    .display {
+      stroke-width: var(--stroke-width);
+    }
+  }
+}
+
+.display {
+  transition-timing-function: ease-out;
+  transition-duration: 100ms;
+  transition-property: stroke-width;
+}

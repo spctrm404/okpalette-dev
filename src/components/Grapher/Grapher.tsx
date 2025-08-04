@@ -4,7 +4,7 @@ import {
   THUMB_INTERACTION_SIZE,
 } from './Grapher.constants';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Links from './Links';
+import Link from './Link';
 import Thumb from './Thumb';
 
 type GrapherProps = {
@@ -164,13 +164,13 @@ const Grapher = ({
         fill="grey"
       />
       {path.map((point, idx) => {
-        if (idx === path.length - 1) return null;
+        if (idx === path.length - 1) return;
         return (
-          <Links
+          <Link
             key={`link-${idx}`}
-            path={path}
-            beginIdx={idx}
-            range2d={usedBound2d}
+            beginVals={point}
+            endVals={path[idx + 1]}
+            valsBound={usedBound2d}
             parentSize={sizeState}
             thumbSize={usedThumbInteractionSize}
           />
@@ -182,16 +182,15 @@ const Grapher = ({
         return (
           <Thumb
             key={`thumb-${idx}`}
-            val={point}
-            valBound2d={usedBound2d}
+            vals={point}
+            valsBound={usedBound2d}
             parentSize={sizeState}
             interactionSize={usedThumbInteractionSize}
             displaySize={usedThumbDisplaySize}
-            valConstraint2d={constraint}
+            valsConstraint={constraint}
             tabIndex={idx + 1}
             onChange={(newValue) => handleThumbChange(idx, newValue)}
             order={order}
-            debug={idx === 1}
           />
         );
       })}
