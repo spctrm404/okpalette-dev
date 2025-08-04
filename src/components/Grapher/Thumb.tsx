@@ -5,7 +5,9 @@ import {
 } from './Grapher.constants';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { clamp, map } from '../../utils/math';
-import { mergeProps, useFocus, useHover, useMove, usePress } from 'react-aria';
+import { mergeProps, useHover, useMove, usePress } from 'react-aria';
+import classes from './_Thumb.module.scss';
+import clsx from 'clsx';
 
 type ThumbProps = {
   val: Vec2;
@@ -100,8 +102,6 @@ const Thumb = ({
     setInternalPosState(valToPos(val));
   }, [val, valToPos]);
 
-  const [isFocusedState, setIsFocusedState] = useState(false);
-
   const { hoverProps, isHovered } = useHover({
     onHoverStart: () => {},
     onHoverEnd: () => {},
@@ -135,17 +135,8 @@ const Thumb = ({
       onChange?.(newVal);
     },
   });
-  const { focusProps } = useFocus({
-    onFocus: () => {
-      setIsFocusedState(true);
-    },
-    onBlur: () => {
-      setIsFocusedState(false);
-    },
-    onFocusChange: () => {},
-  });
 
-  const racProps = mergeProps(hoverProps, pressProps, moveProps, focusProps);
+  const racProps = mergeProps(hoverProps, pressProps, moveProps);
 
   const usedDisplaySize = displaySize || THUMB_DISPLAY_SIZE;
   const usedOrder = order || 'middle';
@@ -155,16 +146,26 @@ const Thumb = ({
 
   const usedIsHovered = isHovered || isMovingRef.current;
   const usedIsPressed = isPressed || isMovingRef.current;
-  const usedIsFocused = isFocusedState;
+  useLayoutEffect(() => {
+    if (usedIsPressed) document.body.style.cursor = 'pointer';
+    else document.body.style.cursor = '';
+
+    return () => {
+      document.body.style.cursor = '';
+    };
+  }, [usedIsPressed]);
 
   return (
     <g
+      className={clsx(classes.container)}
       data-hovered={usedIsHovered}
       data-pressed={usedIsPressed}
-      data-focused={usedIsFocused}
       data-order={usedOrder}
+      data-display-size={usedDisplaySize}
+      data-interaction-size={usedInteractionSize}
     >
       <circle
+        className={clsx(classes.display)}
         cx={usedPos[0]}
         cy={usedPos[1]}
         r={0.5 * usedDisplaySize}
@@ -173,6 +174,7 @@ const Thumb = ({
         strokeWidth="0"
       />
       <circle
+        className={clsx(classes.interaction)}
         {...racProps}
         tabIndex={tabIndex}
         cx={usedPos[0]}

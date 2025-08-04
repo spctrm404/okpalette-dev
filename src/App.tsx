@@ -17,14 +17,13 @@ function App() {
 
   return (
     <>
-      <div style={{ width: '75%', aspectRatio: '16/9' }}>
+      <div style={{ width: '400px', aspectRatio: '4/3' }}>
         <Grapher
           path={points}
           bound2d={[
             [-1, -1],
             [2, 2],
           ]}
-          thumbInteractionSize={16}
           onChange={setPoints}
         />
       </div>
