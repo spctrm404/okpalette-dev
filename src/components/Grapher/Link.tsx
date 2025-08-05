@@ -1,4 +1,4 @@
-import type { Vec2, Mat2, Path } from './Grapher.types';
+import type { Vec2, Mat2, Point } from './Grapher.types';
 import { THUMB_INTERACTION_SIZE } from './Grapher.constants';
 import { map } from '../../utils/math';
 import { useCallback } from 'react';
@@ -7,16 +7,16 @@ import classes from './_Link.module.scss';
 import clsx from 'clsx';
 
 type LinksProps = {
-  beginPath: Path;
-  endPath: Path;
+  point: Point;
+  prevPoint: Point;
   valsBound: Mat2;
   parentSize: Vec2;
   thumbSize?: number;
 };
 
 const Link = ({
-  beginPath,
-  endPath,
+  point,
+  prevPoint,
   valsBound,
   parentSize,
   thumbSize,
@@ -43,34 +43,47 @@ const Link = ({
   );
 
   const d = () => {
-    const { type } = beginPath;
-    const beginPos = valsToPos(beginPath.point);
-    const endPos = valsToPos(endPath.point);
+    const { vals: beginVals } = prevPoint;
+    const beginPos = valsToPos(beginVals);
     const [beginX, beginY] = beginPos;
+    const beginType =
+      'relCp2Vals' in prevPoint
+        ? 'bezier'
+        : 'exponent' in prevPoint
+        ? 'pow'
+        : 'linear';
+
+    const { vals: endVals } = point;
+    const endPos = valsToPos(endVals);
     const [endX, endY] = endPos;
-    if (type === 'linear') {
-      return `M${beginX},${beginY}L${endX},${endY}`;
-    } else if (type === 'bezier') {
-      const { relativeControlPoint1, relativeControlPoint2 } = beginPath;
-      const [c1X, c1Y] = map(
-        relativeControlPoint1,
-        [0, 0],
-        [1, 1],
-        beginPos,
-        endPos
-      );
-      const [c2X, c2Y] = map(
-        relativeControlPoint2,
-        [0, 0],
-        [1, 1],
-        beginPos,
-        endPos
-      );
-      return `M${beginX},${beginY}C${c1X},${c1Y},${c2X},${c2Y},${endX},${endY}`;
-    } else if (type === 'pow') {
-      const exponent = beginPath.exponent;
+    const endType =
+      'relCp1Vals' in point ? 'bezier' : 'exponent' in point ? 'pow' : 'linear';
+
+    let d = `M${beginX},${beginY}`;
+
+    if (beginType === 'linear' && endType === 'linear') {
+      d += `L${endX},${endY}`;
+    } else if (beginType === 'bezier' || endType === 'bezier') {
+      const absCp2Vals =
+        'relCp2Vals' in prevPoint
+          ? (map(
+              prevPoint.relCp2Vals,
+              [0, 0],
+              [1, 1],
+              beginVals,
+              endVals
+            ) as Vec2)
+          : beginVals;
+      const [cp2X, cp2Y] = valsToPos(absCp2Vals);
+      const absCp1Vals =
+        'relCp1Vals' in point
+          ? (map(point.relCp1Vals, [0, 0], [1, 1], endVals, beginVals) as Vec2)
+          : endVals;
+      const [cp1X, cp1Y] = valsToPos(absCp1Vals);
+      d += `C${cp1X},${cp1Y} ${cp2X},${cp2Y} ${endX},${endY}`;
+    } else if (beginType === 'pow') {
+      const exponent = 'exponent' in prevPoint ? prevPoint.exponent : 1;
       const resolution = 64;
-      let d = `M${beginX},${beginY}`;
       for (let n = 1; n <= resolution; ++n) {
         const normalizedX = n / resolution;
         const powedY = Math.pow(normalizedX, exponent);
@@ -78,8 +91,8 @@ const Link = ({
         const y = map(powedY, 0, 1, beginY, endY);
         d += `L${x},${y}`;
       }
-      return d;
     }
+    return d;
   };
 
   const { hoverProps, isHovered } = useHover({

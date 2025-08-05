@@ -1,78 +1,68 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
+import type { Path } from './components/Grapher/Grapher.types';
+import { injectUuid } from './utils/list';
 import GradientGl from './components/GradientGl/GradientGl';
 import Grapher from './components/Grapher/Grapher';
-import type { Paths } from './components/Grapher/Grapher.types';
+import { useState } from 'react';
+import './App.css';
 
-const initialPoints: [number, number][] = [
-  [0, 0],
-  [0.25, 0.5],
-  [0.75, 0.25],
-  [1, 1],
-];
-
-const initialPoints2: Paths = [
+const initialPath: Path = [
   {
-    type: 'linear',
-    point: [0, 0],
+    vals: [0, 0],
   },
   {
-    type: 'bezier',
-    point: [0.25, 0.5],
-    relativeControlPoint1: [1, 0],
-    relativeControlPoint2: [0, 1],
+    vals: [0.25, 0.5],
+    relCp1Vals: [1, 0],
+    relCp2Vals: [0, 1],
   },
   {
-    type: 'pow',
-    point: [0.5, 0.25],
-    exponent: 2,
+    vals: [0.5, 0.25],
+    relCp1Vals: [1, 0],
+    exponent: 1 / 2.2,
   },
   {
-    type: 'linear',
-    point: [1, 1],
+    vals: [1, 1],
   },
 ];
 
 function App() {
-  const [points, setPoints] = useState(initialPoints2);
+  const uuidInjectedPath = injectUuid(initialPath) as Path;
+  const [path, setPath] = useState(uuidInjectedPath);
 
   return (
     <>
       <div style={{ width: '400px', aspectRatio: '4/3' }}>
-        <Grapher paths={points} onChange={setPoints} />
+        <Grapher path={path} onChange={setPath} />
       </div>
       <div>
         <ul>
-          {points.map((aPath, index) => (
+          {path.map((aPoint, index) => (
             <li key={`point-info-${index}`}>
-              Point {index + 1}: ({aPath.point[0].toFixed(2)},{' '}
-              {aPath.point[1].toFixed(2)})
+              Point {index + 1}: ({aPoint.vals[0].toFixed(2)},{' '}
+              {aPoint.vals[1].toFixed(2)})
             </li>
           ))}
         </ul>
         <div>
-          {points.map((aPath, index) => (
+          {path.map((aPoint, index) => (
             <div key={`point-input-${index}`}>
               <input
                 type="number"
-                value={aPath.point[0].toFixed(2)}
+                value={aPoint.vals[0].toFixed(2)}
                 step={0.01}
                 onChange={(e) => {
-                  const newPoints = [...points];
-                  newPoints[index].point[0] = parseFloat(e.target.value);
-                  setPoints(newPoints);
+                  const newPoints = [...path];
+                  newPoints[index].vals[0] = parseFloat(e.target.value);
+                  setPath(newPoints);
                 }}
               />
               <input
                 type="number"
-                value={aPath.point[1].toFixed(2)}
+                value={aPoint.vals[1].toFixed(2)}
                 step={0.01}
                 onChange={(e) => {
-                  const newPoints = [...points];
-                  newPoints[index].point[1] = parseFloat(e.target.value);
-                  setPoints(newPoints);
+                  const newPoints = [...path];
+                  newPoints[index].vals[1] = parseFloat(e.target.value);
+                  setPath(newPoints);
                 }}
               />
             </div>

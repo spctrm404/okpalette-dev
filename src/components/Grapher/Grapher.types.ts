@@ -2,22 +2,33 @@ export type Vec2 = [number, number];
 export type Mat2 = [Vec2, Vec2];
 export type Order = 'first' | 'middle' | 'last';
 
-export type PointType = 'linear' | 'bezier' | 'pow';
-export type PointBase = {
-  type: PointType;
-  point: Vec2;
+type PointBase = {
+  order?: Order;
+  vals: Vec2;
+  uuid?: string;
 };
-export type PointLinear = PointBase & {
-  type: 'linear';
+type PointNextBezier = PointBase & {
+  relCp2Vals: Vec2;
 };
-export type PointPow = PointBase & {
-  type: 'pow';
+type PointNextPow = PointBase & {
   exponent: number;
 };
-export type PointBezier = PointBase & {
-  type: 'bezier';
-  relativeControlPoint1: Vec2;
-  relativeControlPoint2: Vec2;
+type PointPrevBezier = PointBase & {
+  relCp1Vals: Vec2;
 };
-export type Path = PointLinear | PointPow | PointBezier;
-export type Paths = Path[];
+type PointBothBezier = PointBase & {
+  relCp1Vals: Vec2;
+  relCp2Vals: Vec2;
+};
+type PointPrevBezierNextPow = PointBase & {
+  relCp1Vals: Vec2;
+  exponent: number;
+};
+export type Point =
+  | PointBase
+  | PointNextBezier
+  | PointNextPow
+  | PointPrevBezier
+  | PointBothBezier
+  | PointPrevBezierNextPow;
+export type Path = Point[];

@@ -1,4 +1,4 @@
-import type { Vec2, Mat2, Order, Paths } from './Grapher.types';
+import type { Vec2, Mat2, Order, Path } from './Grapher.types';
 import {
   THUMB_DISPLAY_SIZE,
   THUMB_INTERACTION_SIZE,
@@ -8,11 +8,11 @@ import Link from './Link';
 import Thumb from './Thumb';
 
 type GrapherProps = {
-  paths: Paths;
-  bound2d?: Mat2;
+  path: Path;
+  bound?: Mat2;
   thumbInteractionSize?: number;
   thumbDisplaySize?: number;
-  onChange?: (paths: Paths) => void;
+  onChange?: (path: Path) => void;
 };
 
 function getOrder(idx: number, length: number): Order {
@@ -22,21 +22,21 @@ function getOrder(idx: number, length: number): Order {
 }
 
 const Grapher = ({
-  paths,
-  bound2d,
+  path,
+  bound,
   thumbInteractionSize,
   thumbDisplaySize,
   onChange,
 }: GrapherProps) => {
   function getBound2dFromPath(): Mat2 {
-    if (paths.length < 2)
+    if (path.length < 2)
       return [
         [0, 0],
         [1, 1],
       ];
-    const firstX = paths[0].point[0];
-    const lastX = paths[paths.length - 1].point[0];
-    const yVals = paths.map((p) => p.point[1]);
+    const firstX = path[0].vals[0];
+    const lastX = path[path.length - 1].vals[0];
+    const yVals = path.map((aPoint) => aPoint.vals[1]);
     const minY = Math.min(...yVals);
     const maxY = Math.max(...yVals);
     return [
@@ -45,45 +45,43 @@ const Grapher = ({
     ];
   }
 
-  const bound2dFromPathRef = useRef<Mat2>(getBound2dFromPath());
-  const usedBound2d = bound2d || bound2dFromPathRef.current;
+  const boundFromPathRef = useRef<Mat2>(getBound2dFromPath());
+  const usedBound = bound || boundFromPathRef.current;
+  const [[minX, minY], [maxX, maxY]] = usedBound;
   const getConstraint = useCallback(
     (order: Order, idx: number): Mat2 | undefined => {
       if (order === 'first') {
         return [
-          [usedBound2d[0][0], usedBound2d[0][1]],
-          [usedBound2d[0][0], usedBound2d[1][1]],
+          [minX, minY],
+          [minX, maxY],
         ];
       } else if (order === 'last') {
         return [
-          [usedBound2d[1][0], usedBound2d[0][1]],
-          [usedBound2d[1][0], usedBound2d[1][1]],
+          [maxX, minY],
+          [maxX, maxY],
         ];
       } else if (order === 'middle') {
-        const prevX = paths[idx - 1].point[0];
-        const nextX = paths[idx + 1].point[0];
+        const prevX = path[idx - 1].vals[0];
+        const nextX = path[idx + 1].vals[0];
         return [
-          [prevX, usedBound2d[0][1]],
-          [nextX, usedBound2d[1][1]],
+          [prevX, minY],
+          [nextX, maxY],
         ];
       }
       return undefined;
     },
-    [paths, usedBound2d]
+    [path, maxX, maxY, minX, minY]
   );
 
   const handleThumbChange = useCallback(
     (idx: number, newVal: Vec2) => {
-      if (
-        paths[idx].point[0] !== newVal[0] ||
-        paths[idx].point[1] !== newVal[1]
-      ) {
-        const newPath = [...paths];
-        newPath[idx].point = newVal;
+      if (path[idx].vals[0] !== newVal[0] || path[idx].vals[1] !== newVal[1]) {
+        const newPath = [...path];
+        newPath[idx].vals = newVal;
         onChange?.(newPath);
       }
     },
-    [paths, onChange]
+    [path, onChange]
   );
 
   const svgElemRef = useRef<SVGSVGElement>(null);
@@ -166,27 +164,27 @@ const Grapher = ({
         )}
         fill="grey"
       />
-      {paths.map((aPath, idx) => {
-        if (idx === paths.length - 1) return;
+      {path.map((aPoint, idx) => {
+        if (idx === 0) return null;
         return (
           <Link
             key={`link-${idx}`}
-            beginPath={aPath}
-            endPath={paths[idx + 1]}
-            valsBound={usedBound2d}
+            point={aPoint}
+            prevPoint={path[idx - 1]}
+            valsBound={usedBound}
             parentSize={sizeState}
             thumbSize={usedThumbInteractionSize}
           />
         );
       })}
-      {paths.map((aPath, idx) => {
-        const order = getOrder(idx, paths.length);
+      {path.map((aPoint, idx) => {
+        const order = getOrder(idx, path.length);
         const constraint = getConstraint(order, idx);
         return (
           <Thumb
             key={`thumb-${idx}`}
-            vals={aPath.point}
-            valsBound={usedBound2d}
+            vals={aPoint.vals}
+            valsBound={usedBound}
             parentSize={sizeState}
             interactionSize={usedThumbInteractionSize}
             displaySize={usedThumbDisplaySize}
