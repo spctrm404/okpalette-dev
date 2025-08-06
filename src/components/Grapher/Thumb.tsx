@@ -18,7 +18,8 @@ type ThumbProps = {
   order?: Order;
   valsConstraint?: Mat2;
   tabIndex: number;
-  onChange?: (val: Vec2) => void;
+  onMoving?: (val: Vec2) => void;
+  onSelect?: () => void;
 };
 
 const Thumb = ({
@@ -30,7 +31,8 @@ const Thumb = ({
   order,
   valsConstraint,
   tabIndex,
-  onChange,
+  onMoving,
+  onSelect,
 }: ThumbProps) => {
   const [minVals, maxVals] = valsBound;
   const [parentW, parentH] = parentSize;
@@ -107,7 +109,9 @@ const Thumb = ({
     onHoverEnd: () => {},
   });
   const { pressProps, isPressed } = usePress({
-    onPressStart: () => {},
+    onPressStart: () => {
+      if (!isMovingRef.current) onSelect?.();
+    },
     onPressEnd: () => {},
     onPress: () => {},
   });
@@ -125,14 +129,14 @@ const Thumb = ({
       setInternalPosState(newPos);
       const clampedPos = clampPos(newPos);
       const newVal = posToVals(clampedPos);
-      onChange?.(newVal);
+      onMoving?.(newVal);
     },
     onMoveEnd() {
       isMovingRef.current = false;
       const newPos = clampPos(internalPosState);
       const newVal = posToVals(newPos);
       setInternalPosState(valsToPos(newVal));
-      onChange?.(newVal);
+      onMoving?.(newVal);
     },
   });
 
@@ -176,7 +180,7 @@ const Thumb = ({
       <circle
         className={clsx(classes.interaction)}
         {...racProps}
-        tabIndex={tabIndex}
+        // tabIndex={tabIndex}
         cx={usedPos[0]}
         cy={usedPos[1]}
         r={0.5 * usedInteractionSize}

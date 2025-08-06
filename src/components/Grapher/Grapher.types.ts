@@ -8,20 +8,20 @@ type PointBase = {
   uuid?: string;
 };
 type PointNextBezier = PointBase & {
-  relCp2Vals: Vec2;
+  relNextCpVals: Vec2;
 };
 type PointNextPow = PointBase & {
   exponent: number;
 };
 type PointPrevBezier = PointBase & {
-  relCp1Vals: Vec2;
+  relPrevCpVals: Vec2;
 };
 type PointBothBezier = PointBase & {
-  relCp1Vals: Vec2;
-  relCp2Vals: Vec2;
+  relPrevCpVals: Vec2;
+  relNextCpVals: Vec2;
 };
 type PointPrevBezierNextPow = PointBase & {
-  relCp1Vals: Vec2;
+  relPrevCpVals: Vec2;
   exponent: number;
 };
 export type Point =

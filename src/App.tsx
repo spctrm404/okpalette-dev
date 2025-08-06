@@ -1,4 +1,4 @@
-import type { Path } from './components/Grapher/Grapher.types';
+import type { Path, Point } from './components/Grapher/Grapher.types';
 import { injectUuid } from './utils/list';
 import GradientGl from './components/GradientGl/GradientGl';
 import Grapher from './components/Grapher/Grapher';
@@ -10,28 +10,60 @@ const initialPath: Path = [
     vals: [0, 0],
   },
   {
-    vals: [0.25, 0.5],
-    relCp1Vals: [1, 0],
-    relCp2Vals: [0, 1],
+    vals: [25, 0.5],
+    relPrevCpVals: [0.75, 0],
+    relNextCpVals: [0.75, 0],
   },
   {
-    vals: [0.5, 0.25],
-    relCp1Vals: [1, 0],
+    vals: [50, 0.25],
+    relPrevCpVals: [0.75, 0],
     exponent: 1 / 2.2,
   },
   {
-    vals: [1, 1],
+    vals: [100, 1],
   },
 ];
 
 function App() {
   const uuidInjectedPath = injectUuid(initialPath) as Path;
   const [path, setPath] = useState(uuidInjectedPath);
+  const [selectedPoint, setSelectedPoint] = useState<Point | null>(null);
+  const handleThumbSelect = (idx: number, point: Point) => {
+    setSelectedPoint(point);
+  };
 
   return (
     <>
       <div style={{ width: '400px', aspectRatio: '4/3' }}>
-        <Grapher path={path} onChange={setPath} />
+        <Grapher
+          path={path}
+          onThumbMoving={setPath}
+          onThumbSelect={handleThumbSelect}
+        />
+      </div>
+      <div>
+        <input
+          type="number"
+          value={selectedPoint !== null ? selectedPoint.vals[0].toFixed(2) : ''}
+          onChange={(e) => {
+            if (selectedPoint !== null) {
+              const newPath = [...path];
+              selectedPoint.vals[0] = parseFloat(e.target.value);
+              setPath(newPath);
+            }
+          }}
+        />
+        <input
+          type="number"
+          value={selectedPoint !== null ? selectedPoint.vals[1].toFixed(2) : ''}
+          onChange={(e) => {
+            if (selectedPoint !== null) {
+              const newPath = [...path];
+              selectedPoint.vals[1] = parseFloat(e.target.value);
+              setPath(newPath);
+            }
+          }}
+        />
       </div>
       <div>
         <ul>
@@ -42,7 +74,7 @@ function App() {
             </li>
           ))}
         </ul>
-        <div>
+        {/* <div>
           {path.map((aPoint, index) => (
             <div key={`point-input-${index}`}>
               <input
@@ -67,7 +99,7 @@ function App() {
               />
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     </>
     // <>

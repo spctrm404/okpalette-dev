@@ -1,4 +1,4 @@
-import type { Vec2, Mat2, Order, Path } from './Grapher.types';
+import type { Vec2, Mat2, Order, Path, Point } from './Grapher.types';
 import {
   THUMB_DISPLAY_SIZE,
   THUMB_INTERACTION_SIZE,
@@ -12,7 +12,8 @@ type GrapherProps = {
   bound?: Mat2;
   thumbInteractionSize?: number;
   thumbDisplaySize?: number;
-  onChange?: (path: Path) => void;
+  onThumbMoving?: (path: Path) => void;
+  onThumbSelect?: (idx: number, point: Point) => void;
 };
 
 function getOrder(idx: number, length: number): Order {
@@ -26,7 +27,8 @@ const Grapher = ({
   bound,
   thumbInteractionSize,
   thumbDisplaySize,
-  onChange,
+  onThumbMoving,
+  onThumbSelect,
 }: GrapherProps) => {
   function getBound2dFromPath(): Mat2 {
     if (path.length < 2)
@@ -73,15 +75,25 @@ const Grapher = ({
     [path, maxX, maxY, minX, minY]
   );
 
-  const handleThumbChange = useCallback(
+  const handleThumbMoving = useCallback(
     (idx: number, newVal: Vec2) => {
-      if (path[idx].vals[0] !== newVal[0] || path[idx].vals[1] !== newVal[1]) {
+      const [newX, newY] = newVal;
+      const currentPoint = path[idx];
+      const [currentX, currentY] = currentPoint.vals;
+      if (currentX !== newX || currentY !== newY) {
         const newPath = [...path];
-        newPath[idx].vals = newVal;
-        onChange?.(newPath);
+        newPath[idx] = { ...currentPoint, vals: newVal };
+        onThumbMoving?.(newPath);
       }
     },
-    [path, onChange]
+    [path, onThumbMoving]
+  );
+
+  const handleThumbSelect = useCallback(
+    (idx: number) => {
+      onThumbSelect?.(idx, path[idx]);
+    },
+    [onThumbSelect, path]
   );
 
   const svgElemRef = useRef<SVGSVGElement>(null);
@@ -190,7 +202,8 @@ const Grapher = ({
             displaySize={usedThumbDisplaySize}
             valsConstraint={constraint}
             tabIndex={idx + 1}
-            onChange={(newValue) => handleThumbChange(idx, newValue)}
+            onMoving={(newValue) => handleThumbMoving(idx, newValue)}
+            onSelect={() => handleThumbSelect(idx)}
             order={order}
           />
         );
