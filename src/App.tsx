@@ -7,29 +7,29 @@ import './App.css';
 
 const initialPath: Path = [
   {
-    vals: [0, 0],
+    val: [0, 0],
   },
   {
-    vals: [25, 0.5],
-    relPrevCpVals: [0.75, 0],
-    relNextCpVals: [0.75, 0],
+    val: [25, 0.5],
+    prevCpRelVal: [0.75, 0],
+    nextCpRelVal: [0.75, 0],
   },
   {
-    vals: [50, 0.25],
-    relPrevCpVals: [0.75, 0],
+    val: [50, 0.25],
+    prevCpRelVal: [0.75, 0],
     exponent: 1 / 2.2,
   },
   {
-    vals: [100, 1],
+    val: [100, 1],
   },
 ];
 
 function App() {
   const uuidInjectedPath = injectUuid(initialPath) as Path;
   const [path, setPath] = useState(uuidInjectedPath);
-  const [selectedPoint, setSelectedPoint] = useState<Point | null>(null);
+  const [selectedPoint, setSelectedPoint] = useState<number>(0);
   const handleThumbSelect = (idx: number, point: Point) => {
-    setSelectedPoint(point);
+    setSelectedPoint(idx);
   };
 
   return (
@@ -44,22 +44,26 @@ function App() {
       <div>
         <input
           type="number"
-          value={selectedPoint !== null ? selectedPoint.vals[0].toFixed(2) : ''}
+          value={
+            selectedPoint !== null ? path[selectedPoint].val[0].toFixed(2) : ''
+          }
           onChange={(e) => {
             if (selectedPoint !== null) {
               const newPath = [...path];
-              selectedPoint.vals[0] = parseFloat(e.target.value);
+              newPath[selectedPoint].val[0] = parseFloat(e.target.value);
               setPath(newPath);
             }
           }}
         />
         <input
           type="number"
-          value={selectedPoint !== null ? selectedPoint.vals[1].toFixed(2) : ''}
+          value={
+            selectedPoint !== null ? path[selectedPoint].val[1].toFixed(2) : ''
+          }
           onChange={(e) => {
             if (selectedPoint !== null) {
               const newPath = [...path];
-              selectedPoint.vals[1] = parseFloat(e.target.value);
+              newPath[selectedPoint].val[1] = parseFloat(e.target.value);
               setPath(newPath);
             }
           }}
@@ -69,8 +73,8 @@ function App() {
         <ul>
           {path.map((aPoint, index) => (
             <li key={`point-info-${index}`}>
-              Point {index + 1}: ({aPoint.vals[0].toFixed(2)},{' '}
-              {aPoint.vals[1].toFixed(2)})
+              Point {index + 1}: ({aPoint.val[0].toFixed(2)},{' '}
+              {aPoint.val[1].toFixed(2)})
             </li>
           ))}
         </ul>

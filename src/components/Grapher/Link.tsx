@@ -9,7 +9,7 @@ import clsx from 'clsx';
 type LinksProps = {
   point: Point;
   prevPoint: Point;
-  valsBound: Mat2;
+  bound: Mat2;
   parentSize: Vec2;
   thumbSize?: number;
 };
@@ -17,11 +17,11 @@ type LinksProps = {
 const Link = ({
   point,
   prevPoint,
-  valsBound,
+  bound,
   parentSize,
   thumbSize,
 }: LinksProps) => {
-  const [minVals, maxVals] = valsBound;
+  const [minVal, maxVal] = bound;
   const [parentW, parentH] = parentSize;
   const usedThumbSize = thumbSize || THUMB_INTERACTION_SIZE;
   const padding = 0.5 * usedThumbSize;
@@ -29,88 +29,84 @@ const Link = ({
   const minPosY = padding;
   const maxPosX = parentW - padding;
   const maxPosY = parentH - padding;
-  const valsToPos = useCallback(
-    (vals: Vec2): Vec2 => {
+
+  const valToPos = useCallback(
+    (val: Vec2): Vec2 => {
       return map(
-        vals,
-        minVals,
-        maxVals,
+        val,
+        minVal,
+        maxVal,
         [minPosX, maxPosY],
         [maxPosX, minPosY]
       ) as Vec2;
     },
-    [minPosX, minPosY, maxPosX, maxPosY, maxVals, minVals]
+    [minPosX, minPosY, maxPosX, maxPosY, maxVal, minVal]
   );
 
-  const { vals: beginVals } = prevPoint;
-  const beginPos = valsToPos(beginVals);
-  const [beginX, beginY] = beginPos;
+  const { val: beginVal } = prevPoint;
+  const beginPos = valToPos(beginVal);
+  const [beginPosX, beginPosY] = beginPos;
   const beginType =
-    'relNextCpVals' in prevPoint
+    'nextCpRelVal' in prevPoint
       ? 'bezier'
       : 'exponent' in prevPoint
       ? 'pow'
       : 'linear';
 
-  const { vals: endVals } = point;
-  const endPos = valsToPos(endVals);
-  const [endX, endY] = endPos;
+  const { val: endVal } = point;
+  const endPos = valToPos(endVal);
+  const [endPosX, endPosY] = endPos;
   const endType =
-    'relPrevCpVals' in point
-      ? 'bezier'
-      : 'exponent' in point
-      ? 'pow'
-      : 'linear';
-
-  const absCp1Vals =
-    'relNextCpVals' in prevPoint
-      ? (map(
-          prevPoint.relNextCpVals,
-          [0, 0],
-          [1, 1],
-          beginVals,
-          endVals
-        ) as Vec2)
-      : beginVals;
-  const [cp1X, cp1Y] = valsToPos(absCp1Vals);
-
-  const absCp2Vals =
-    'relPrevCpVals' in point
-      ? (map(point.relPrevCpVals, [0, 0], [1, 1], endVals, beginVals) as Vec2)
-      : endVals;
-  const [cp2X, cp2Y] = valsToPos(absCp2Vals);
+    'prevCpRelVal' in point ? 'bezier' : 'exponent' in point ? 'pow' : 'linear';
 
   const exponent = 'exponent' in prevPoint ? prevPoint.exponent : 1;
 
   const d = useCallback(() => {
-    let d = `M${beginX},${beginY}`;
+    let d = `M${beginPosX},${beginPosY}`;
     if (beginType === 'linear' && endType === 'linear') {
-      d += `L${endX},${endY}`;
+      d += `L${endPosX},${endPosY}`;
     } else if (beginType === 'bezier' || endType === 'bezier') {
-      d += `C${cp1X},${cp1Y} ${cp2X},${cp2Y} ${endX},${endY}`;
+      const cp1AbsVal =
+        'nextCpRelVal' in prevPoint
+          ? (map(
+              prevPoint.nextCpRelVal,
+              [0, 0],
+              [1, 1],
+              beginVal,
+              endVal
+            ) as Vec2)
+          : beginVal;
+      const [cp1PosX, cp1PosY] = valToPos(cp1AbsVal);
+      const cp2AbsVal =
+        'prevCpRelVal' in point
+          ? (map(point.prevCpRelVal, [0, 0], [1, 1], endVal, beginVal) as Vec2)
+          : endVal;
+      const [cp2PosX, cp2PosY] = valToPos(cp2AbsVal);
+      d += `C${cp1PosX},${cp1PosY} ${cp2PosX},${cp2PosY} ${endPosX},${endPosY}`;
     } else if (beginType === 'pow') {
       const resolution = 64;
       for (let n = 1; n <= resolution; ++n) {
         const normalizedX = n / resolution;
         const powedY = Math.pow(normalizedX, exponent);
-        const x = map(normalizedX, 0, 1, beginX, endX);
-        const y = map(powedY, 0, 1, beginY, endY);
-        d += `L${x},${y}`;
+        const posX = map(normalizedX, 0, 1, beginPosX, endPosX);
+        const posY = map(powedY, 0, 1, beginPosY, endPosY);
+        d += `L${posX},${posY}`;
       }
     }
     return d;
   }, [
+    point,
+    prevPoint,
     beginType,
-    beginX,
-    beginY,
+    beginVal,
+    beginPosX,
+    beginPosY,
     endType,
-    endX,
-    endY,
-    cp1X,
-    cp1Y,
-    cp2X,
-    cp2Y,
+    endVal,
+    endPosX,
+    endPosY,
     exponent,
+    valToPos,
   ]);
 
   const { hoverProps, isHovered } = useHover({
@@ -127,22 +123,6 @@ const Link = ({
 
   return (
     <>
-      <path
-        d={`M${beginX},${beginY} L${cp1X},${cp1Y}`}
-        fill="none"
-        stroke="black"
-        strokeWidth="1"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      <path
-        d={`M${endX},${endY} L${cp2X},${cp2Y}`}
-        fill="none"
-        stroke="black"
-        strokeWidth="1"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
       <g
         className={clsx(classes.container)}
         data-hovered={isHovered}

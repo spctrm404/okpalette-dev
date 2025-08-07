@@ -4,26 +4,20 @@ export type Order = 'first' | 'middle' | 'last';
 
 type PointBase = {
   order?: Order;
-  vals: Vec2;
+  val: Vec2;
   uuid?: string;
 };
 type PointNextBezier = PointBase & {
-  relNextCpVals: Vec2;
+  nextCpRelVal: Vec2;
 };
+type PointPrevBezier = PointBase & {
+  prevCpRelVal: Vec2;
+};
+type PointBothBezier = PointNextBezier & PointPrevBezier;
 type PointNextPow = PointBase & {
   exponent: number;
 };
-type PointPrevBezier = PointBase & {
-  relPrevCpVals: Vec2;
-};
-type PointBothBezier = PointBase & {
-  relPrevCpVals: Vec2;
-  relNextCpVals: Vec2;
-};
-type PointPrevBezierNextPow = PointBase & {
-  relPrevCpVals: Vec2;
-  exponent: number;
-};
+type PointPrevBezierNextPow = PointPrevBezier & PointNextPow;
 export type Point =
   | PointBase
   | PointNextBezier

@@ -10,31 +10,33 @@ import classes from './_Thumb.module.scss';
 import clsx from 'clsx';
 
 type ThumbProps = {
-  vals: Vec2;
-  valsBound: Mat2;
+  val: Vec2;
+  bound: Mat2;
   parentSize: Vec2;
+  constraint?: Mat2;
   interactionSize?: number;
   displaySize?: number;
   order?: Order;
-  valsConstraint?: Mat2;
-  tabIndex: number;
+  tabIndex?: number;
   onMoving?: (val: Vec2) => void;
+  isSelected?: boolean;
   onSelect?: () => void;
 };
 
 const Thumb = ({
-  vals,
-  valsBound,
+  val,
+  bound,
   parentSize,
+  constraint,
   interactionSize,
   displaySize,
   order,
-  valsConstraint,
   tabIndex,
   onMoving,
+  isSelected,
   onSelect,
 }: ThumbProps) => {
-  const [minVals, maxVals] = valsBound;
+  const [minVal, maxVal] = bound;
   const [parentW, parentH] = parentSize;
   const usedInteractionSize = interactionSize || THUMB_INTERACTION_SIZE;
   const padding = 0.5 * usedInteractionSize;
@@ -42,43 +44,47 @@ const Thumb = ({
   const minPosY = padding;
   const maxPosX = parentW - padding;
   const maxPosY = parentH - padding;
-  const valsToPos = useCallback(
-    (vals: Vec2): Vec2 => {
+
+  const valToPos = useCallback(
+    (val: Vec2): Vec2 => {
       return map(
-        vals,
-        minVals,
-        maxVals,
+        val,
+        minVal,
+        maxVal,
         [minPosX, maxPosY],
         [maxPosX, minPosY]
       ) as Vec2;
     },
-    [minPosX, minPosY, maxPosX, maxPosY, maxVals, minVals]
+    [minPosX, minPosY, maxPosX, maxPosY, maxVal, minVal]
   );
-  const posToVals = useCallback(
+  const posToVal = useCallback(
     (pos: Vec2): Vec2 =>
-      map(
-        pos,
-        [minPosX, maxPosY],
-        [maxPosX, minPosY],
-        minVals,
-        maxVals
-      ) as Vec2,
-    [minPosX, minPosY, maxPosX, maxPosY, maxVals, minVals]
+      map(pos, [minPosX, maxPosY], [maxPosX, minPosY], minVal, maxVal) as Vec2,
+    [minPosX, minPosY, maxPosX, maxPosY, maxVal, minVal]
   );
 
-  const [constraintMinPosX, constraintMaxPosY] = valsConstraint
-    ? valsToPos(valsConstraint[0])
-    : [minPosX, maxPosY];
-  const [constraintMaxPosX, constraintMinPosY] = valsConstraint
-    ? valsToPos(valsConstraint[1])
-    : [maxPosX, minPosY];
+  const [constraintMinPosX, constraintMinPosY] = constraint
+    ? valToPos(constraint[0])
+    : [minPosX, minPosY];
+  const [constraintMaxPosX, constraintMaxPosY] = constraint
+    ? valToPos(constraint[1])
+    : [maxPosX, maxPosY];
+
   const clampPos = useCallback(
     (pos: Vec2): Vec2 => {
+      const usedConstraintMinPos = [
+        Math.min(constraintMinPosX, constraintMaxPosX),
+        Math.min(constraintMinPosY, constraintMaxPosY),
+      ];
+      const usedConstraintMaxPos = [
+        Math.max(constraintMinPosX, constraintMaxPosX),
+        Math.max(constraintMinPosY, constraintMaxPosY),
+      ];
       const clampedPos = clamp(pos, [minPosX, minPosY], [maxPosX, maxPosY]);
       const constraintedPos = clamp(
         clampedPos,
-        [constraintMinPosX, constraintMinPosY],
-        [constraintMaxPosX, constraintMaxPosY]
+        usedConstraintMinPos,
+        usedConstraintMaxPos
       );
       return constraintedPos as Vec2;
     },
@@ -95,29 +101,28 @@ const Thumb = ({
   );
 
   const isMovingRef = useRef(false);
-  const [internalPosState, setInternalPosState] = useState<Vec2>(
-    valsToPos(vals)
-  );
+  const [internalPosState, setInternalPosState] = useState<Vec2>(valToPos(val));
+
   useLayoutEffect(() => {
     if (isMovingRef.current) return;
-
-    setInternalPosState(valsToPos(vals));
-  }, [vals, valsToPos]);
+    setInternalPosState(valToPos(val));
+  }, [val, valToPos]);
 
   const { hoverProps, isHovered } = useHover({
     onHoverStart: () => {},
     onHoverEnd: () => {},
   });
   const { pressProps, isPressed } = usePress({
-    onPressStart: () => {
-      if (!isMovingRef.current) onSelect?.();
-    },
+    onPressStart: () => {},
     onPressEnd: () => {},
-    onPress: () => {},
+    onPress: () => {
+      if (!isSelected) onSelect?.();
+    },
   });
   const { moveProps } = useMove({
     onMoveStart() {
       isMovingRef.current = true;
+      if (!isSelected) onSelect?.();
     },
     onMove(e) {
       const newPos =
@@ -128,14 +133,14 @@ const Thumb = ({
       newPos[1] += e.deltaY;
       setInternalPosState(newPos);
       const clampedPos = clampPos(newPos);
-      const newVal = posToVals(clampedPos);
+      const newVal = posToVal(clampedPos);
       onMoving?.(newVal);
     },
     onMoveEnd() {
       isMovingRef.current = false;
       const newPos = clampPos(internalPosState);
-      const newVal = posToVals(newPos);
-      setInternalPosState(valsToPos(newVal));
+      setInternalPosState(newPos);
+      const newVal = posToVal(newPos);
       onMoving?.(newVal);
     },
   });
@@ -144,16 +149,15 @@ const Thumb = ({
 
   const usedDisplaySize = displaySize || THUMB_DISPLAY_SIZE;
   const usedOrder = order || 'middle';
-  const usedPos = isMovingRef.current
+  const [usedPosX, usedPosY] = isMovingRef.current
     ? clampPos(internalPosState)
-    : valsToPos(vals);
-
+    : valToPos(val);
   const usedIsHovered = isHovered || isMovingRef.current;
   const usedIsPressed = isPressed || isMovingRef.current;
+
   useLayoutEffect(() => {
     if (usedIsPressed) document.body.style.cursor = 'pointer';
     else document.body.style.cursor = '';
-
     return () => {
       document.body.style.cursor = '';
     };
@@ -164,14 +168,15 @@ const Thumb = ({
       className={clsx(classes.container)}
       data-hovered={usedIsHovered}
       data-pressed={usedIsPressed}
+      data-selected={isSelected}
       data-order={usedOrder}
       data-display-size={usedDisplaySize}
       data-interaction-size={usedInteractionSize}
     >
       <circle
         className={clsx(classes.display)}
-        cx={usedPos[0]}
-        cy={usedPos[1]}
+        cx={usedPosX}
+        cy={usedPosY}
         r={0.5 * usedDisplaySize}
         fill="#fff"
         stroke="transparent"
@@ -181,8 +186,8 @@ const Thumb = ({
         className={clsx(classes.interaction)}
         {...racProps}
         // tabIndex={tabIndex}
-        cx={usedPos[0]}
-        cy={usedPos[1]}
+        cx={usedPosX}
+        cy={usedPosY}
         r={0.5 * usedInteractionSize}
         fill="transparent"
         stroke="none"
