@@ -6,6 +6,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from './Link';
 import Thumb from './Thumb';
+import ControlPoint from './ControlPoint';
 import { map } from '../../utils/math';
 
 type GrapherProps = {
@@ -15,6 +16,7 @@ type GrapherProps = {
   thumbDisplaySize?: number;
   onThumbMoving?: (path: Path) => void;
   onThumbSelect?: (idx: number, point: Point) => void;
+  onControlPointMoving?: (path: Path) => void;
 };
 
 const getOrder = (idx: number, length: number): Order => {
@@ -30,6 +32,7 @@ const Grapher = ({
   thumbDisplaySize,
   onThumbMoving,
   onThumbSelect,
+  onControlPointMoving,
 }: GrapherProps) => {
   const getBoundFromPath = (): Mat2 => {
     if (path.length < 2)
@@ -191,6 +194,26 @@ const Grapher = ({
           />
         );
       })}
+      <ControlPoint
+        path={path}
+        idx={selectedThumbIdxState}
+        bound={usedBound}
+        parentSize={sizeState}
+        onMoving={(idx, relVal, fieldName) => {
+          const currentPoint = path[idx];
+          const newPath = [...path];
+          newPath[idx] = { ...currentPoint };
+          if (fieldName === 'prevCpRelVal' && 'prevCpRelVal' in newPath[idx])
+            newPath[idx].prevCpRelVal = relVal;
+          else if (
+            fieldName === 'nextCpRelVal' &&
+            'nextCpRelVal' in newPath[idx]
+          )
+            newPath[idx].nextCpRelVal = relVal;
+          console.log('Control point moving:', newPath);
+          onControlPointMoving?.(newPath);
+        }}
+      />
       {path.map((aPoint, idx) => {
         const order = getOrder(idx, path.length);
         const constraint = getConstraint(order, idx);

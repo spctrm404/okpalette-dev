@@ -7,17 +7,17 @@ type PointBase = {
   val: Vec2;
   uuid?: string;
 };
-type PointNextBezier = PointBase & {
+export type PointNextBezier = PointBase & {
   nextCpRelVal: Vec2;
 };
-type PointPrevBezier = PointBase & {
+export type PointPrevBezier = PointBase & {
   prevCpRelVal: Vec2;
 };
-type PointBothBezier = PointNextBezier & PointPrevBezier;
-type PointNextPow = PointBase & {
+export type PointBothBezier = PointNextBezier & PointPrevBezier;
+export type PointNextPow = PointBase & {
   exponent: number;
 };
-type PointPrevBezierNextPow = PointPrevBezier & PointNextPow;
+export type PointPrevBezierNextPow = PointPrevBezier & PointNextPow;
 export type Point =
   | PointBase
   | PointNextBezier

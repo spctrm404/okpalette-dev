@@ -39,6 +39,7 @@ function App() {
           path={path}
           onThumbMoving={setPath}
           onThumbSelect={handleThumbSelect}
+          onControlPointMoving={setPath}
         />
       </div>
       <div>

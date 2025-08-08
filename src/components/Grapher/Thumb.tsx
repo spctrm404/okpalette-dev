@@ -55,49 +55,28 @@ const Thumb = ({
         [maxPosX, minPosY]
       ) as Vec2;
     },
-    [minPosX, minPosY, maxPosX, maxPosY, maxVal, minVal]
+    [maxVal, minVal, minPosX, minPosY, maxPosX, maxPosY]
   );
+
   const posToVal = useCallback(
     (pos: Vec2): Vec2 =>
       map(pos, [minPosX, maxPosY], [maxPosX, minPosY], minVal, maxVal) as Vec2,
-    [minPosX, minPosY, maxPosX, maxPosY, maxVal, minVal]
+    [maxVal, minVal, minPosX, minPosY, maxPosX, maxPosY]
   );
-
-  const [constraintMinPosX, constraintMinPosY] = constraint
-    ? valToPos(constraint[0])
-    : [minPosX, minPosY];
-  const [constraintMaxPosX, constraintMaxPosY] = constraint
-    ? valToPos(constraint[1])
-    : [maxPosX, maxPosY];
 
   const clampPos = useCallback(
     (pos: Vec2): Vec2 => {
-      const usedConstraintMinPos = [
-        Math.min(constraintMinPosX, constraintMaxPosX),
-        Math.min(constraintMinPosY, constraintMaxPosY),
-      ];
-      const usedConstraintMaxPos = [
-        Math.max(constraintMinPosX, constraintMaxPosX),
-        Math.max(constraintMinPosY, constraintMaxPosY),
-      ];
+      const constraintMin = constraint
+        ? valToPos(constraint[0])
+        : [minPosX, minPosY];
+      const constraintMax = constraint
+        ? valToPos(constraint[1])
+        : [maxPosX, maxPosY];
       const clampedPos = clamp(pos, [minPosX, minPosY], [maxPosX, maxPosY]);
-      const constraintedPos = clamp(
-        clampedPos,
-        usedConstraintMinPos,
-        usedConstraintMaxPos
-      );
+      const constraintedPos = clamp(clampedPos, constraintMin, constraintMax);
       return constraintedPos as Vec2;
     },
-    [
-      minPosX,
-      minPosY,
-      maxPosX,
-      maxPosY,
-      constraintMinPosX,
-      constraintMinPosY,
-      constraintMaxPosX,
-      constraintMaxPosY,
-    ]
+    [constraint, minPosX, minPosY, maxPosX, maxPosY, valToPos]
   );
 
   const isMovingRef = useRef(false);
