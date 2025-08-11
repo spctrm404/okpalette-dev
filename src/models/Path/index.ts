@@ -1,0 +1,10 @@
+export * from './Point';
+export { default as Point } from './Point';
+export * from './ControlPoint';
+export { default as ControlPoint } from './ControlPoint';
+export * from './BezierPoint';
+export { default as BezierPoint } from './BezierPoint';
+export * from './ExponentPoint';
+export { default as ExponentPoint } from './ExponentPoint';
+export * from './Path';
+export { default as Path } from './Path';

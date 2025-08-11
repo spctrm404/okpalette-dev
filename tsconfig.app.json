@@ -21,7 +21,17 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@COMPONENTS/*": ["./src/components/*"],
+      "@CONTEXTS/*": ["./src/contexts/*"],
+      "@MODELS/*": ["./src/models/*"],
+      "@TYPES/*": ["./src/types/*"],
+      "@UTILS/*": ["./src/utils/*"]
+    }
   },
   "include": ["src"]
 }
