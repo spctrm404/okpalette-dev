@@ -1,6 +1,6 @@
 import { Path } from '@/models/Path';
 import { PathContext } from './context';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useMemo } from 'react';
 
 type PathProviderProps = {
   children: React.ReactNode;
@@ -14,9 +14,12 @@ export function PathProvider({ children, pathArray }: PathProviderProps) {
     setTick((prev) => prev + 1);
   }, []);
 
+  const contextValue = useMemo(
+    () => ({ path: pathRef.current, renderTrigger }),
+    [renderTrigger]
+  );
+
   return (
-    <PathContext.Provider value={{ path: pathRef.current, renderTrigger }}>
-      {children}
-    </PathContext.Provider>
+    <PathContext.Provider value={contextValue}>{children}</PathContext.Provider>
   );
 }

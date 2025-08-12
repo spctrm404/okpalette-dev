@@ -1,6 +1,6 @@
 import type { Vec2 } from '@TYPES/index';
 import { SizeContext } from './context';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 type SizeProviderProps = {
   children: React.ReactNode;
@@ -39,11 +39,11 @@ export function SizeProvider({
       resizeObserver.disconnect();
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [elemRef, setSizeState]);
+
+  const contextValue = useMemo(() => ({ size: sizeState }), [sizeState]);
 
   return (
-    <SizeContext.Provider value={{ size: sizeState }}>
-      {children}
-    </SizeContext.Provider>
+    <SizeContext.Provider value={contextValue}>{children}</SizeContext.Provider>
   );
 }
