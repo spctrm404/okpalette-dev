@@ -1,12 +1,22 @@
+import { Path } from '@/models/Path';
 import { PathContext } from './context';
-import { Path } from '@MODELS/Path';
+import { useCallback, useRef, useState } from 'react';
 
-export function PathProvider({
-  children,
-  path,
-}: {
+type PathProviderProps = {
   children: React.ReactNode;
-  path: Path;
-}) {
-  return <PathContext.Provider value={path}>{children}</PathContext.Provider>;
+  pathArray: number[][];
+};
+
+export function PathProvider({ children, pathArray }: PathProviderProps) {
+  const pathRef = useRef<Path>(Path.fromArray(pathArray));
+  const [, setTick] = useState(0);
+  const renderTrigger = useCallback(() => {
+    setTick((prev) => prev + 1);
+  }, []);
+
+  return (
+    <PathContext.Provider value={{ path: pathRef.current, renderTrigger }}>
+      {children}
+    </PathContext.Provider>
+  );
 }

@@ -1,7 +1,12 @@
+import { Path } from '@/models/Path';
 import { createContext, useContext } from 'react';
-import { Path } from '@MODELS/Path';
 
-export const PathContext = createContext<Path>(new Path());
+type PathContextValue = {
+  path: Path;
+  renderTrigger: () => void;
+};
+
+export const PathContext = createContext<PathContextValue | null>(null);
 
 export function usePath() {
   return useContext(PathContext);

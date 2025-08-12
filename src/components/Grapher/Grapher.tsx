@@ -210,7 +210,6 @@ const Grapher = ({
             'nextCpRelVal' in newPath[idx]
           )
             newPath[idx].nextCpRelVal = relVal;
-          console.log('Control point moving:', newPath);
           onControlPointMoving?.(newPath);
         }}
       />

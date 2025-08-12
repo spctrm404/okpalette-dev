@@ -7,15 +7,16 @@ class ControlPoint extends Point {
   #neighborPt: Point | null = null;
   #twinPt: ControlPoint | null = null;
 
-  constructor(absCoord: Vec2, parentPt: Point) {
-    super(absCoord);
+  constructor(parentPt: Point, absCoord: Vec2) {
+    super([0, 0]);
     this.#parentPt = parentPt;
+    this.absCoord = absCoord;
   }
 
   get neighborPt(): Point | null {
     return this.#neighborPt;
   }
-  set neighborPt(neighborPt: Point) {
+  set neighborPt(neighborPt: Point | null) {
     this.#neighborPt = neighborPt;
   }
 
@@ -29,20 +30,20 @@ class ControlPoint extends Point {
     return this.#twinPt !== null;
   }
 
-  get relCoord(): Vec2 | null {
+  get absCoord(): Vec2 | null {
     if (!this.#neighborPt) return null;
     return map(
       this.coord,
-      this.#parentPt.coord,
-      this.#neighborPt.coord,
       [0, 0],
-      [1, 1]
+      [1, 1],
+      this.#parentPt.coord,
+      this.#neighborPt.coord
     ) as Vec2;
   }
-  set relCoord(relCoord: Vec2) {
+  set absCoord(absCoord: Vec2) {
     if (!this.#neighborPt) return;
     this.coord = map(
-      relCoord,
+      absCoord,
       [0, 0],
       [1, 1],
       this.#parentPt.coord,
@@ -52,23 +53,27 @@ class ControlPoint extends Point {
 
   syncTwin(syncLength = false): void {
     if (!this.#twinPt) return;
-    const vec2ToParent = Point.sub(this.#parentPt.coord, this.coord);
+    const vec2ToParent = Point.sub(this.#parentPt.coord, this.absCoord as Vec2);
     if (syncLength) {
-      this.#twinPt.coord = Point.add(this.#parentPt.coord, vec2ToParent);
+      this.#twinPt.absCoord = Point.add(this.#parentPt.coord, vec2ToParent);
     } else {
       const [toParentX, toParentY] = vec2ToParent;
       const angle = Math.atan2(toParentY, toParentX);
       const [fromParentToTwinX, fromParentToTwinY] = Point.sub(
-        this.#twinPt.coord,
+        this.#twinPt.absCoord as Vec2,
         this.#parentPt.coord
       );
       const length = Math.hypot(fromParentToTwinX, fromParentToTwinY);
       const [px, py] = this.#parentPt.coord;
-      this.#twinPt.coord = [
+      this.#twinPt.absCoord = [
         px + length * Math.cos(angle),
         py + length * Math.sin(angle),
       ] as Vec2;
     }
+  }
+
+  isReadyToUse(): boolean {
+    return this.#neighborPt !== null;
   }
 }
 
