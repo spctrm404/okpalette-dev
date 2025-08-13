@@ -1,26 +1,27 @@
-import type { Vec2 } from '@TYPES/index';
+import type { Vec2 } from '@/types';
+import type { SizeContextValue } from './context';
 import { SizeContext } from './context';
 import { useEffect, useMemo } from 'react';
 
 type SizeProviderProps = {
   children: React.ReactNode;
+  observingTargetRef: React.RefObject<Element | null>;
   sizeStates: [Vec2, React.Dispatch<React.SetStateAction<Vec2>>];
-  elemRef: React.RefObject<Element | null>;
 };
 
 export function SizeProvider({
   children,
+  observingTargetRef,
   sizeStates,
-  elemRef,
 }: SizeProviderProps) {
   const [sizeState, setSizeState] = sizeStates;
 
   useEffect(() => {
-    const elem = elemRef.current;
-    if (!elem) return;
+    const observingTarget = observingTargetRef.current;
+    if (!observingTarget) return;
     let animationFrameId: number | null = null;
     const handleResize = () => {
-      const elem = elemRef.current;
+      const elem = observingTargetRef.current;
       if (!elem) return;
       const rect = elem.getBoundingClientRect();
       setSizeState((prev) => {
@@ -29,19 +30,22 @@ export function SizeProvider({
         return prev;
       });
     };
-    const resizeObserver = new window.ResizeObserver(() => {
+    const resizeObserver = new ResizeObserver(() => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
       animationFrameId = requestAnimationFrame(handleResize);
     });
-    resizeObserver.observe(elem);
+    resizeObserver.observe(observingTarget);
     handleResize();
     return () => {
       resizeObserver.disconnect();
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [elemRef, setSizeState]);
+  }, [observingTargetRef, setSizeState]);
 
-  const contextValue = useMemo(() => ({ size: sizeState }), [sizeState]);
+  const contextValue = useMemo<SizeContextValue>(
+    () => ({ size: sizeState }),
+    [sizeState]
+  );
 
   return (
     <SizeContext.Provider value={contextValue}>{children}</SizeContext.Provider>

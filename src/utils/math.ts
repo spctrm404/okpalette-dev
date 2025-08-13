@@ -88,5 +88,11 @@ export function map(
   ) {
     return map(val, fromMin, fromMax, toMin, toMax);
   }
-  throw new Error('map: invalid arguments');
+  throw new Error(
+    `map: invalid arguments\nval: ${JSON.stringify(
+      val
+    )}\nfromMin: ${JSON.stringify(fromMin)}\nfromMax: ${JSON.stringify(
+      fromMax
+    )}\ntoMin: ${JSON.stringify(toMin)}\ntoMax: ${JSON.stringify(toMax)}`
+  );
 }

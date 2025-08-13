@@ -5,8 +5,8 @@ import Grapher from './components/Grapher/Grapher';
 import { useState, useRef } from 'react';
 import './App.css';
 import { PathProvider } from '@CONTEXTS/path';
-import { Path } from '@MODELS/Path';
-import Graph from '@COMPONENTS/Graph/Graph';
+import { Paths } from '@MODELS/Paths';
+import Graph from '@COMPONENTS/Graph/Graph.tsx';
 
 // const initialPath: Path = [
 //   {
@@ -39,10 +39,10 @@ function App() {
     <>
       <div style={{ width: '50%', aspectRatio: '4/3' }}>
         <Graph
-          pathArray={[
+          pathsArray={[
             [0, 0],
             [25, 0.5, 12.5, 0.5, 37.5, 0.5],
-            [50, 0.25],
+            [50, 0.25, 37.5, 0.25, 50, 0.25],
             [75, 0.5, 1 / 2.2],
             [100, 1],
           ]}

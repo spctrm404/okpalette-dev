@@ -1,6 +1,6 @@
-import type { Vec2 } from '@TYPES/index';
+import type { Vec2 } from '@/types';
 
-class Point {
+export class Point {
   #x: number;
   #y: number;
   #uuid: string;
@@ -33,5 +33,3 @@ class Point {
     return [ax - bx, ay - by];
   }
 }
-
-export default Point;
