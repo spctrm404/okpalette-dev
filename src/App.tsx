@@ -4,9 +4,9 @@ import GradientGl from './components/GradientGl/GradientGl';
 import Grapher from './components/Grapher/Grapher';
 import { useState, useRef } from 'react';
 import './App.css';
-import { PathProvider } from '@CONTEXTS/path';
-import { Paths } from '@MODELS/Paths';
-import Graph from '@COMPONENTS/Graph/Graph.tsx';
+import { PathProvider } from '@/contexts/path';
+import { Paths } from '@/models/Paths';
+import Graph from '@/components/Graph/Graph.tsx';
 
 // const initialPath: Path = [
 //   {

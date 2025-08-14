@@ -4,11 +4,13 @@ export class Point {
   #x: number;
   #y: number;
   #uuid: string;
+  #listeners: Set<() => void>;
 
   constructor([x, y]: Vec2) {
     this.#x = x;
     this.#y = y;
     this.#uuid = crypto.randomUUID();
+    this.#listeners = new Set<() => void>();
   }
 
   get coord(): Vec2 {
@@ -17,6 +19,7 @@ export class Point {
   set coord([x, y]: Vec2) {
     this.#x = x;
     this.#y = y;
+    this.#emit();
   }
 
   get uuid(): string {
@@ -24,6 +27,20 @@ export class Point {
   }
   set uuid(uuid: string) {
     this.#uuid = uuid;
+  }
+
+  subscribe(fn: () => void): () => void {
+    this.#listeners.add(fn);
+    return () => this.#listeners.delete(fn);
+  }
+  #emit() {
+    for (const fn of Array.from(this.#listeners)) {
+      try {
+        fn();
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }
 
   static add([ax, ay]: Vec2, [bx, by]: Vec2): Vec2 {

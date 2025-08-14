@@ -1,5 +1,5 @@
 import type { PathsContextValue } from './context';
-import { Paths } from '@MODELS/Paths';
+import { Paths } from '@/models/Paths';
 import { PathsContext } from './context';
 import { useCallback, useState, useMemo } from 'react';
 

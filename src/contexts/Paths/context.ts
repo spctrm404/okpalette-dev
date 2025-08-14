@@ -1,4 +1,4 @@
-import { Paths } from '@MODELS/Paths';
+import { Paths } from '@/models/Paths';
 import { createContext, useContext } from 'react';
 
 export type PathsContextValue = {

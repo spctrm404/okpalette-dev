@@ -1,44 +1,81 @@
-import { BezierPoint } from '@MODELS/Paths';
-import { ExponentPoint } from '@MODELS/Paths';
-import type { PointInstance } from '@MODELS/Paths';
+import type { PointInstance } from '@/models/Paths';
+import { BezierPoint } from '@/models/Paths';
+import Thumb from './Thumb';
 import { useGraph } from './Graph.context';
-import { map } from '@/utils';
+import { usePoint } from '@/hooks/Paths/usePoint';
+import { useMemo } from 'react';
 
 type PointProps = {
   point: PointInstance;
+  idx: number;
 };
 
-const Point = ({ point }: PointProps) => {
+const Point = ({ point, idx }: PointProps) => {
+  const prevCp = point instanceof BezierPoint ? point.prevCp : null;
+  const nextCp = point instanceof BezierPoint ? point.nextCp : null;
+
+  const trgPt = usePoint(point);
+  const trgPrevCp = usePoint(prevCp);
+  const trgNextCp = usePoint(nextCp);
+
   const { coordToPos } = useGraph();
 
-  const [posX, posY] = coordToPos(point.coord);
+  const pos = coordToPos(point.coord);
 
-  const controlPoint = () => {
-    if (point instanceof BezierPoint) {
-      const isCp1Active = point.prevCp.isActive;
-      const [cp1X, cp1Y] = coordToPos(point.prevCp.absCoord);
-      const isCp2Active = point.nextCp.isActive;
-      const [cp2X, cp2Y] = coordToPos(point.nextCp.absCoord);
+  const controlPt = useMemo(() => {
+    if (prevCp?.isActive || nextCp?.isActive) {
+      const [prevCpPosX, prevCpPosY] = prevCp?.isActive
+        ? coordToPos(prevCp.absCoord)
+        : pos;
+      const [nextCpPosX, nextCpPosY] = nextCp?.isActive
+        ? coordToPos(nextCp.absCoord)
+        : pos;
       return (
         <>
-          {isCp1Active && (
-            <path d={`M${posX},${posY} L${cp1X},${cp1Y}`} stroke="blue" />
+          {prevCp?.isActive && (
+            <path
+              d={`M${pos[0]},${pos[1]} L${prevCpPosX},${prevCpPosY}`}
+              stroke="blue"
+            />
           )}
-          {isCp2Active && (
-            <path d={`M${posX},${posY} L${cp2X},${cp2Y}`} stroke="blue" />
+          {nextCp?.isActive && (
+            <path
+              d={`M${pos[0]},${pos[1]} L${nextCpPosX},${nextCpPosY}`}
+              stroke="blue"
+            />
           )}
-          {isCp1Active && <circle cx={cp1X} cy={cp1Y} r={6} fill="blue" />}
-          {isCp2Active && <circle cx={cp2X} cy={cp2Y} r={6} fill="blue" />}
+          {prevCp?.isActive && (
+            <Thumb
+              val={prevCp.absCoord}
+              onMoving={(newVal) => {
+                prevCp.absCoord = newVal;
+              }}
+            />
+          )}
+          {nextCp?.isActive && (
+            <Thumb
+              val={nextCp.absCoord}
+              onMoving={(newVal) => {
+                nextCp.absCoord = newVal;
+              }}
+            />
+          )}
         </>
       );
     }
     return null;
-  };
+  }, [pos, nextCp, prevCp, coordToPos, trgPt, trgPrevCp, trgNextCp]);
 
   return (
     <>
-      <circle cx={posX} cy={posY} r={12} />
-      {controlPoint()}
+      {controlPt}
+      <Thumb
+        val={point.coord}
+        tabIndex={idx}
+        onMoving={(newVal) => {
+          point.coord = newVal;
+        }}
+      />
     </>
   );
 };

@@ -1,6 +1,6 @@
 import type { Vec2, Mat2 } from '@/types';
 import { THUMB_DISPLAY_SIZE, THUMB_INTERACTION_SIZE } from './Graph.constants';
-import { clamp, map } from '@/utils';
+import { clamp } from '@/utils';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { mergeProps, useHover, useMove, usePress } from 'react-aria';
 import classes from './_Thumb.module.scss';
@@ -9,32 +9,26 @@ import { useGraph } from './Graph.context';
 
 type ThumbProps = {
   val: Vec2;
-  bound: Mat2;
-  parentSize: Vec2;
   constraint?: Mat2;
   interactionSize?: number;
   displaySize?: number;
+  isSelected?: boolean;
   tabIndex?: number;
   onMoving?: (val: Vec2) => void;
-  isSelected?: boolean;
   onSelect?: () => void;
 };
 
 const Thumb = ({
   val,
-  bound,
-  parentSize,
   constraint,
   interactionSize,
   displaySize,
+  isSelected,
   tabIndex,
   onMoving,
-  isSelected,
   onSelect,
 }: ThumbProps) => {
   const { coordToPos, posToCoord, clampPos } = useGraph();
-
-  const usedInteractionSize = interactionSize || THUMB_INTERACTION_SIZE;
 
   const constrainPos = useCallback(
     (pos: Vec2): Vec2 => {
@@ -80,8 +74,8 @@ const Thumb = ({
       newPos[0] += e.deltaX;
       newPos[1] += e.deltaY;
       setInternalPosState(newPos);
-      const clampedPos = constrainPos(newPos);
-      const newVal = posToCoord(clampedPos);
+      const constrainedPos = constrainPos(newPos);
+      const newVal = posToCoord(constrainedPos);
       onMoving?.(newVal);
     },
     onMoveEnd() {
@@ -95,10 +89,13 @@ const Thumb = ({
 
   const racProps = mergeProps(hoverProps, pressProps, moveProps);
 
+  const usedInteractionSize = interactionSize || THUMB_INTERACTION_SIZE;
   const usedDisplaySize = displaySize || THUMB_DISPLAY_SIZE;
-  const [usedPosX, usedPosY] = isMovingRef.current
-    ? constrainPos(internalPosState)
-    : coordToPos(val);
+  const [usedPosX, usedPosY] = onMoving
+    ? isMovingRef.current
+      ? constrainPos(internalPosState)
+      : coordToPos(val)
+    : constrainPos(internalPosState);
   const usedIsHovered = isHovered || isMovingRef.current;
   const usedIsPressed = isPressed || isMovingRef.current;
 

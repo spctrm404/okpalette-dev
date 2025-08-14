@@ -1,10 +1,8 @@
 import type { Mat2, Vec2 } from '@/types';
-import { Paths } from '@MODELS/Paths';
+import { Paths } from '@/models/Paths';
 import { THUMB_INTERACTION_SIZE, THUMB_DISPLAY_SIZE } from './Graph.constants';
 import { GraphProvider } from './Graph.provider';
-import { PathsProvider } from '@CONTEXTS/Paths';
-import { SizeProvider } from '@CONTEXTS/Size';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { clamp, map } from '@/utils';
 import Point from './Point';
 import Link from './Link';
@@ -26,18 +24,43 @@ const Graph = ({
 
   const elemRef = useRef<SVGSVGElement>(null);
   const elemSizeStates = useState<Vec2>([0, 0]);
-  const [[elemWidth, elemHeight]] = elemSizeStates;
+  const [elemSizeState, setElemSizeState] = elemSizeStates;
+  useEffect(() => {
+    const observingTarget = elemRef.current;
+    if (!observingTarget) return;
+    let animationFrameId: number | null = null;
+    const handleResize = () => {
+      const elem = elemRef.current;
+      if (!elem) return;
+      const rect = elem.getBoundingClientRect();
+      setElemSizeState((prev) => {
+        if (prev[0] !== rect.width || prev[1] !== rect.height)
+          return [rect.width, rect.height];
+        return prev;
+      });
+    };
+    const resizeObserver = new ResizeObserver(() => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(handleResize);
+    });
+    resizeObserver.observe(observingTarget);
+    handleResize();
+    return () => {
+      resizeObserver.disconnect();
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
+  }, [setElemSizeState]);
 
   const usedThumbInteractionSize =
     thumbInteractionSize || THUMB_INTERACTION_SIZE;
   const usedThumbDisplaySize = thumbDisplaySize || THUMB_DISPLAY_SIZE;
   const padding = 0.5 * usedThumbInteractionSize;
   const minPosX = padding;
-  const minPosY = elemHeight - padding;
-  const maxPosX = elemWidth - padding;
+  const minPosY = elemSizeState[1] - padding;
+  const maxPosX = elemSizeState[0] - padding;
   const maxPosY = padding;
-  const paddedWidth = elemWidth - 2 * padding;
-  const paddedHeight = elemHeight - 2 * padding;
+  const paddedWidth = elemSizeState[0] - 2 * padding;
+  const paddedHeight = elemSizeState[1] - 2 * padding;
 
   const getBoundFromPath = (): Mat2 => {
     if (pathsArray.length < 2)
@@ -55,7 +78,6 @@ const Graph = ({
       [lastX, maxY],
     ];
   };
-
   const boundFromPathRef = useRef<Mat2>(getBoundFromPath());
   const usedBound = bound || boundFromPathRef.current;
   const [minBound, maxBound] = usedBound;
@@ -74,7 +96,6 @@ const Graph = ({
     },
     [minBound, maxBound, minPosX, minPosY, maxPosX, maxPosY]
   );
-
   const posToCoord = useCallback(
     (pos: Vec2): Vec2 => {
       return map(
@@ -127,7 +148,7 @@ const Graph = ({
       ref={elemRef}
       width="100%"
       height="100%"
-      viewBox={`0 0 ${elemWidth} ${elemHeight}`}
+      viewBox={`0 0 ${elemSizeState[0]} ${elemSizeState[1]}`}
       style={{
         display: 'block',
         touchAction: 'none',
@@ -141,35 +162,32 @@ const Graph = ({
         posToCoord={posToCoord}
         clampPos={clampPos}
       >
-        <PathsProvider paths={pathsRef.current}>
-          <SizeProvider
-            observingTargetRef={elemRef}
-            sizeStates={elemSizeStates}
-          >
-            <rect
-              x={padding}
-              y={padding}
-              width={Math.max(paddedWidth, 0)}
-              height={Math.max(paddedHeight, 0)}
-              fill="grey"
+        <rect
+          x={padding}
+          y={padding}
+          width={Math.max(paddedWidth, 0)}
+          height={Math.max(paddedHeight, 0)}
+          fill="grey"
+        />
+        {pathsRef.current.points.map((aPoint, idx) => {
+          if (idx === 0) return null;
+          return (
+            <Link
+              key={`graph-link-${aPoint.uuid}`}
+              beginPoint={pathsRef.current.getPoint(idx - 1)!}
+              endPoint={aPoint}
             />
-            {pathsRef.current.points.map((aPoint, idx) => {
-              if (idx === 0) return null;
-              return (
-                <Link
-                  key={`graph-link-${aPoint.uuid}`}
-                  beginPoint={pathsRef.current.getPoint(idx - 1)!}
-                  endPoint={aPoint}
-                />
-              );
-            })}
-            {pathsRef.current.points.map((aPoint) => {
-              return (
-                <Point key={`graph-point-${aPoint.uuid}`} point={aPoint} />
-              );
-            })}
-          </SizeProvider>
-        </PathsProvider>
+          );
+        })}
+        {pathsRef.current.points.map((aPoint, idx) => {
+          return (
+            <Point
+              key={`graph-point-${aPoint.uuid}`}
+              point={aPoint}
+              idx={idx}
+            />
+          );
+        })}
       </GraphProvider>
     </svg>
   );
