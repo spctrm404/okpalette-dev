@@ -17,14 +17,12 @@ const Point = ({ point, prevPt, nextPt, idx }: PointProps) => {
   console.log(`render: point${idx}`);
   const prevCp = point instanceof BezierPoint ? point.prevCp : null;
   const nextCp = point instanceof BezierPoint ? point.nextCp : null;
-  const usedPrevPt = prevPt && nextPt ? prevPt : null;
-  const usedNextPt = prevPt && nextPt ? nextPt : null;
 
   const trgPt = usePoint(point);
   const trgPrevCp = usePoint(prevCp);
   const trgNextCp = usePoint(nextCp);
-  const trgPrevPt = usePoint(usedPrevPt);
-  const trgNextPt = usePoint(usedNextPt);
+  const trgPrevPt = usePoint(prevPt || null);
+  const trgNextPt = usePoint(nextPt || null);
 
   const { coordToPos } = useGraph();
 
@@ -66,6 +64,10 @@ const Point = ({ point, prevPt, nextPt, idx }: PointProps) => {
               onMoving={(newVal) => {
                 prevCp.absCoord = newVal;
               }}
+              {...(prevPt && {
+                constraintX: [prevPt.coord[0], point.coord[0]] as Vec2,
+                constraintY: [prevPt.coord[1], point.coord[1]] as Vec2,
+              })}
             />
           )}
           {nextCp?.isActive && (
@@ -74,13 +76,17 @@ const Point = ({ point, prevPt, nextPt, idx }: PointProps) => {
               onMoving={(newVal) => {
                 nextCp.absCoord = newVal;
               }}
+              {...(nextPt && {
+                constraintX: [nextPt.coord[0], point.coord[0]] as Vec2,
+                constraintY: [nextPt.coord[1], point.coord[1]] as Vec2,
+              })}
             />
           )}
         </>
       );
     }
     return null;
-  }, [coordToPos, trgPt, trgPrevCp, trgNextCp]);
+  }, [coordToPos, trgPt, trgPrevCp, trgNextCp, trgPrevPt, trgNextPt]);
 
   return (
     <>

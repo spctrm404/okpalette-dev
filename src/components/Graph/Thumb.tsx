@@ -32,21 +32,24 @@ const Thumb = ({
 }: ThumbProps) => {
   const { coordToPos, posToCoord, clampPos } = useGraph();
 
-  const constrainPos = (pos: Vec2): Vec2 => {
-    let [posX, posY] = clampPos(pos);
-    if (!constraintX && !constraintY) return [posX, posY];
-    if (constraintX) {
-      const [minPosX] = coordToPos([constraintX[0], 0]);
-      const [maxPosX] = coordToPos([constraintX[1], 0]);
-      posX = clamp(posX, minPosX, maxPosX);
-    }
-    if (constraintY) {
-      const [minPosY] = coordToPos([constraintY[0], 0]);
-      const [maxPosY] = coordToPos([constraintY[1], 0]);
-      posY = clamp(posY, minPosY, maxPosY);
-    }
-    return [posX, posY];
-  };
+  const constrainPos = useCallback(
+    (pos: Vec2): Vec2 => {
+      let [posX, posY] = clampPos(pos);
+      if (!constraintX && !constraintY) return [posX, posY];
+      if (constraintX) {
+        const [minPosX] = coordToPos([constraintX[0], 0]);
+        const [maxPosX] = coordToPos([constraintX[1], 0]);
+        posX = clamp(posX, minPosX, maxPosX);
+      }
+      if (constraintY) {
+        const [, minPosY] = coordToPos([0, constraintY[0]]);
+        const [, maxPosY] = coordToPos([0, constraintY[1]]);
+        posY = clamp(posY, minPosY, maxPosY);
+      }
+      return [posX, posY];
+    },
+    [constraintX, constraintY, coordToPos, clampPos]
+  );
 
   const isMovingRef = useRef(false);
   const [internalPosState, setInternalPosState] = useState<Vec2>(
