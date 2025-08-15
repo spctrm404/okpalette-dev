@@ -8,20 +8,19 @@ import Link from './Graph.Link';
 import Node from './Graph.Node';
 
 type GraphProps = {
-  pathsArray: number[][];
+  paths: Paths;
   bound?: Mat2;
   thumbInteractionSize?: number;
   thumbDisplaySize?: number;
 };
 
 const Graph = ({
-  pathsArray,
+  paths,
   bound,
   thumbInteractionSize,
   thumbDisplaySize,
 }: GraphProps) => {
-  const pathsRef = useRef<Paths>(Paths.fromArray(pathsArray));
-  const usedPath = pathsRef.current;
+  const usedPath = paths;
 
   const elemRef = useRef<SVGSVGElement>(null);
   const elemSizeStates = useState<Vec2>([0, 0]);
@@ -64,14 +63,14 @@ const Graph = ({
   const paddedHeight = elemSizeState[1] - 2 * padding;
 
   const getBoundFromPath = (): Mat2 => {
-    if (pathsArray.length < 2)
+    if (paths.length < 2)
       return [
         [0, 0],
         [1, 1],
       ];
-    const firstX = pathsArray[0][0];
-    const lastX = pathsArray[pathsArray.length - 1][0];
-    const yVals = pathsArray.map((aPoint) => aPoint[1]);
+    const firstX = paths.getPoint(0)!.coord[0];
+    const lastX = paths.getPoint(paths.length - 1)!.coord[0];
+    const yVals = paths.points.map((aPoint) => aPoint.coord[1]);
     const minY = Math.min(...yVals);
     const maxY = Math.max(...yVals);
     return [
