@@ -1,17 +1,20 @@
+import { useMemo } from 'react';
 import type { PointInstance } from '@/models/Paths';
 import { BezierPoint } from '@/models/Paths';
 import { ExponentPoint } from '@/models/Paths';
+import { usePoint } from '@/hooks/Paths';
 import { map } from '@/utils';
 import { useGraph } from './Graph.context';
-import { usePoint } from '@/hooks/Paths/usePoint';
-import { useMemo } from 'react';
 
 type LinkProps = {
   beginPoint: PointInstance;
   endPoint: PointInstance;
+  idx: number;
 };
 
-const Link = ({ beginPoint, endPoint }: LinkProps) => {
+const Link = ({ beginPoint, endPoint, idx }: LinkProps) => {
+  console.log(`render: link${idx}`);
+
   const cp1 = beginPoint instanceof BezierPoint ? beginPoint.nextCp : null;
   const cp2 = endPoint instanceof BezierPoint ? endPoint.prevCp : null;
 

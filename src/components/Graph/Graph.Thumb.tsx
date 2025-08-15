@@ -1,11 +1,11 @@
-import type { Vec2, Mat2 } from '@/types';
-import { THUMB_DISPLAY_SIZE, THUMB_INTERACTION_SIZE } from './Graph.constants';
-import { clamp } from '@/utils';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { mergeProps, useHover, useMove, usePress } from 'react-aria';
+import type { Vec2 } from '@/types';
+import { clamp } from '@/utils';
+import { THUMB_DISPLAY_SIZE, THUMB_INTERACTION_SIZE } from './Graph.constants';
+import { useGraph } from './Graph.context';
 import classes from './_Thumb.module.scss';
 import clsx from 'clsx';
-import { useGraph } from './Graph.context';
 
 type ThumbProps = {
   val: Vec2;
@@ -100,13 +100,13 @@ const Thumb = ({
 
   const racProps = mergeProps(hoverProps, pressProps, moveProps);
 
-  const usedInteractionSize = interactionSize || THUMB_INTERACTION_SIZE;
-  const usedDisplaySize = displaySize || THUMB_DISPLAY_SIZE;
   const [usedPosX, usedPosY] = onMoving
     ? isMovingRef.current
       ? constrainPos(internalPosState)
       : coordToPos(val)
     : constrainPos(internalPosState);
+  const usedInteractionSize = interactionSize || THUMB_INTERACTION_SIZE;
+  const usedDisplaySize = displaySize || THUMB_DISPLAY_SIZE;
   const usedIsHovered = isHovered || isMovingRef.current;
   const usedIsPressed = isPressed || isMovingRef.current;
 

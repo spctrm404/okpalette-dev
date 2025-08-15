@@ -1,11 +1,11 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Mat2, Vec2 } from '@/types';
 import { Paths } from '@/models/Paths';
+import { clamp, map } from '@/utils';
 import { THUMB_INTERACTION_SIZE, THUMB_DISPLAY_SIZE } from './Graph.constants';
 import { GraphProvider } from './Graph.provider';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { clamp, map } from '@/utils';
-import Point from './Point';
-import Link from './Link';
+import Link from './Graph.Link';
+import Node from './Graph.Node';
 
 type GraphProps = {
   pathsArray: number[][];
@@ -82,9 +82,6 @@ const Graph = ({
   const boundFromPathRef = useRef<Mat2>(getBoundFromPath());
   const usedBound = bound || boundFromPathRef.current;
   const [minBound, maxBound] = usedBound;
-  const [minCoordX, minCoordY] = minBound;
-  const [maxCoordX, maxCoordY] = maxBound;
-
   const coordToPos = useCallback(
     (coord: Vec2): Vec2 => {
       return map(
@@ -109,7 +106,6 @@ const Graph = ({
     },
     [minBound, maxBound, minPosX, minPosY, maxPosX, maxPosY]
   );
-
   const clampPos = useCallback(
     (pos: Vec2): Vec2 =>
       clamp(pos, [minPosX, minPosY], [maxPosX, maxPosY]) as Vec2,
@@ -149,12 +145,13 @@ const Graph = ({
               key={`graph-link-${aPoint.uuid}`}
               beginPoint={usedPath.getPoint(idx - 1)!}
               endPoint={aPoint}
+              idx={idx}
             />
           );
         })}
         {usedPath.points.map((aPoint, idx) => {
           return (
-            <Point
+            <Node
               key={`graph-point-${aPoint.uuid}`}
               point={aPoint}
               {...(idx > 0 && { prevPt: usedPath.getPoint(idx - 1)! })}

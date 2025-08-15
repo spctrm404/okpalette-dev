@@ -1,10 +1,10 @@
-import type { PointInstance } from '@/models/Paths';
-import { BezierPoint } from '@/models/Paths';
-import Thumb from './Thumb';
-import { useGraph } from './Graph.context';
-import { usePoint } from '@/hooks/Paths/usePoint';
 import { useMemo } from 'react';
 import type { Vec2 } from '@/types';
+import type { PointInstance } from '@/models/Paths';
+import { BezierPoint } from '@/models/Paths';
+import { usePoint } from '@/hooks/Paths';
+import { useGraph } from './Graph.context';
+import Thumb from './Graph.Thumb';
 
 type PointProps = {
   point: PointInstance;
@@ -13,8 +13,9 @@ type PointProps = {
   idx: number;
 };
 
-const Point = ({ point, prevPt, nextPt, idx }: PointProps) => {
-  console.log(`render: point${idx}`);
+const Node = ({ point, prevPt, nextPt, idx }: PointProps) => {
+  console.log(`render: node${idx}`);
+
   const prevCp = point instanceof BezierPoint ? point.prevCp : null;
   const nextCp = point instanceof BezierPoint ? point.nextCp : null;
 
@@ -103,4 +104,4 @@ const Point = ({ point, prevPt, nextPt, idx }: PointProps) => {
   );
 };
 
-export default Point;
+export default Node;
