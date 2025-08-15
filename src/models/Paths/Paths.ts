@@ -8,8 +8,13 @@ export type Points = PointInstance[];
 
 export class Paths {
   #points: Points;
+  #listeners: Set<() => void>;
+  #pointUnsubscribeFns: Map<string, () => void>;
+
   constructor() {
     this.#points = [];
+    this.#listeners = new Set<() => void>();
+    this.#pointUnsubscribeFns = new Map<string, () => void>();
   }
 
   get points(): Points {
@@ -33,18 +38,34 @@ export class Paths {
     if (idx === undefined) {
       this.#points.push(point);
       this.updateBezierLinks(this.length - 1);
+      this.#subscribePoint(point);
     } else if (idx >= 0 && idx <= this.length) {
       this.#points.splice(idx, 0, point);
       this.updateBezierLinks(idx);
+      this.#subscribePoint(point);
     }
+    this.#emit();
   }
 
   changePointType(point: PointInstance, idx: number): void {
     if (idx < 0 || idx >= this.length) return;
-    const { uuid } = this.#points[idx];
+    const oldPoint = this.#points[idx];
+    this.#unsubscribePoint(oldPoint);
+
+    const { uuid } = oldPoint;
     point.uuid = uuid;
     this.#points[idx] = point;
     this.updateBezierLinks(idx);
+    this.#subscribePoint(point);
+    this.#emit();
+  }
+
+  removePoint(idx: number): void {
+    if (idx < 0 || idx >= this.length) return;
+    const point = this.#points[idx];
+    this.#unsubscribePoint(point);
+    this.#points.splice(idx, 1);
+    this.#emit();
   }
 
   updateBezierLinks(idx: number): void {
@@ -69,6 +90,31 @@ export class Paths {
       point.nextPt = rightPt;
       if (!point.nextCp.isInitialized)
         point.nextCp.initializeCoordFromAbsCoord();
+    }
+  }
+
+  subscribe(fn: () => void): () => void {
+    this.#listeners.add(fn);
+    return () => this.#listeners.delete(fn);
+  }
+  #emit() {
+    for (const fn of Array.from(this.#listeners)) {
+      try {
+        fn();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+  #subscribePoint(point: PointInstance) {
+    const unsubscribe = point.subscribe(() => this.#emit());
+    this.#pointUnsubscribeFns.set(point.uuid, unsubscribe);
+  }
+  #unsubscribePoint(point: PointInstance) {
+    const unsubscribe = this.#pointUnsubscribeFns.get(point.uuid);
+    if (unsubscribe) {
+      unsubscribe();
+      this.#pointUnsubscribeFns.delete(point.uuid);
     }
   }
 

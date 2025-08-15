@@ -14,5 +14,6 @@ export class ExponentPoint extends Point {
   }
   set exponent(exponent: number) {
     this.#exponent = exponent;
+    this._emit();
   }
 }

@@ -9,7 +9,8 @@ import { useGraph } from './Graph.context';
 
 type ThumbProps = {
   val: Vec2;
-  constraint?: Mat2;
+  constraintX?: Vec2;
+  constraintY?: Vec2;
   interactionSize?: number;
   displaySize?: number;
   isSelected?: boolean;
@@ -20,7 +21,8 @@ type ThumbProps = {
 
 const Thumb = ({
   val,
-  constraint,
+  constraintX,
+  constraintY,
   interactionSize,
   displaySize,
   isSelected,
@@ -30,15 +32,21 @@ const Thumb = ({
 }: ThumbProps) => {
   const { coordToPos, posToCoord, clampPos } = useGraph();
 
-  const constrainPos = useCallback(
-    (pos: Vec2): Vec2 => {
-      if (!constraint) return clampPos(pos);
-      const constraintMin = coordToPos(constraint[0]);
-      const constraintMax = coordToPos(constraint[1]);
-      return clamp(pos, constraintMin, constraintMax) as Vec2;
-    },
-    [constraint, coordToPos, clampPos]
-  );
+  const constrainPos = (pos: Vec2): Vec2 => {
+    let [posX, posY] = clampPos(pos);
+    if (!constraintX && !constraintY) return [posX, posY];
+    if (constraintX) {
+      const [minPosX] = coordToPos([constraintX[0], 0]);
+      const [maxPosX] = coordToPos([constraintX[1], 0]);
+      posX = clamp(posX, minPosX, maxPosX);
+    }
+    if (constraintY) {
+      const [minPosY] = coordToPos([constraintY[0], 0]);
+      const [maxPosY] = coordToPos([constraintY[1], 0]);
+      posY = clamp(posY, minPosY, maxPosY);
+    }
+    return [posX, posY];
+  };
 
   const isMovingRef = useRef(false);
   const [internalPosState, setInternalPosState] = useState<Vec2>(

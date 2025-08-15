@@ -44,17 +44,7 @@ const Link = ({ beginPoint, endPoint }: LinkProps) => {
       dStr += ` L${endPos[0]},${endPos[1]}`;
     }
     return dStr;
-  }, [
-    beginPoint,
-    endPoint.coord,
-    cp1,
-    cp2,
-    coordToPos,
-    trgBeginPt,
-    trgCp1,
-    trgCp2,
-    trgEndPt,
-  ]);
+  }, [coordToPos, trgBeginPt, trgCp1, trgCp2, trgEndPt]);
 
   return <path d={d} fill="none" stroke="black" strokeWidth={2} />;
 };

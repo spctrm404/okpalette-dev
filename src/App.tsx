@@ -37,7 +37,7 @@ function App() {
 
   return (
     <>
-      <div style={{ width: '50%', aspectRatio: '4/3' }}>
+      <div style={{ width: '50%', height: '400px' }}>
         <Graph
           pathsArray={[
             [0, 0],

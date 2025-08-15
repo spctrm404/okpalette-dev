@@ -19,7 +19,7 @@ export class Point {
   set coord([x, y]: Vec2) {
     this.#x = x;
     this.#y = y;
-    this.#emit();
+    this._emit();
   }
 
   get uuid(): string {
@@ -33,7 +33,7 @@ export class Point {
     this.#listeners.add(fn);
     return () => this.#listeners.delete(fn);
   }
-  #emit() {
+  _emit() {
     for (const fn of Array.from(this.#listeners)) {
       try {
         fn();

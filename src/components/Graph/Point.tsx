@@ -4,23 +4,39 @@ import Thumb from './Thumb';
 import { useGraph } from './Graph.context';
 import { usePoint } from '@/hooks/Paths/usePoint';
 import { useMemo } from 'react';
+import type { Vec2 } from '@/types';
 
 type PointProps = {
   point: PointInstance;
+  prevPt?: PointInstance;
+  nextPt?: PointInstance;
   idx: number;
 };
 
-const Point = ({ point, idx }: PointProps) => {
+const Point = ({ point, prevPt, nextPt, idx }: PointProps) => {
+  console.log(`render: point${idx}`);
   const prevCp = point instanceof BezierPoint ? point.prevCp : null;
   const nextCp = point instanceof BezierPoint ? point.nextCp : null;
+  const usedPrevPt = prevPt && nextPt ? prevPt : null;
+  const usedNextPt = prevPt && nextPt ? nextPt : null;
 
   const trgPt = usePoint(point);
   const trgPrevCp = usePoint(prevCp);
   const trgNextCp = usePoint(nextCp);
+  const trgPrevPt = usePoint(usedPrevPt);
+  const trgNextPt = usePoint(usedNextPt);
 
   const { coordToPos } = useGraph();
 
   const pos = coordToPos(point.coord);
+
+  const constraintX = useMemo(
+    () =>
+      prevPt && nextPt
+        ? [prevPt.coord[0], nextPt.coord[0]]
+        : [point.coord[0], point.coord[0]],
+    [trgPt, trgPrevPt, trgNextPt]
+  );
 
   const controlPt = useMemo(() => {
     if (prevCp?.isActive || nextCp?.isActive) {
@@ -64,7 +80,7 @@ const Point = ({ point, idx }: PointProps) => {
       );
     }
     return null;
-  }, [pos, nextCp, prevCp, coordToPos, trgPt, trgPrevCp, trgNextCp]);
+  }, [coordToPos, trgPt, trgPrevCp, trgNextCp]);
 
   return (
     <>
@@ -75,6 +91,7 @@ const Point = ({ point, idx }: PointProps) => {
         onMoving={(newVal) => {
           point.coord = newVal;
         }}
+        constraintX={constraintX as Vec2}
       />
     </>
   );

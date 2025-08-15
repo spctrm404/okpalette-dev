@@ -23,6 +23,7 @@ export class ControlPoint extends Point {
   }
   set neighborPt(neighborPt: Point | null) {
     this.#neighborPt = neighborPt;
+    this._emit();
   }
 
   get twinPt(): ControlPoint | null {
@@ -30,6 +31,7 @@ export class ControlPoint extends Point {
   }
   set twinPt(twinPt: ControlPoint) {
     this.#twinPt = twinPt;
+    this._emit();
   }
   get hasTwin(): boolean {
     return this.#twinPt !== null;

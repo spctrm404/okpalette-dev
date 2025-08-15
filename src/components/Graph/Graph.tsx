@@ -21,6 +21,7 @@ const Graph = ({
   thumbDisplaySize,
 }: GraphProps) => {
   const pathsRef = useRef<Paths>(Paths.fromArray(pathsArray));
+  const usedPath = pathsRef.current;
 
   const elemRef = useRef<SVGSVGElement>(null);
   const elemSizeStates = useState<Vec2>([0, 0]);
@@ -115,34 +116,6 @@ const Graph = ({
     [minPosX, minPosY, maxPosX, maxPosY]
   );
 
-  const getConstraint = useCallback(
-    (idx: number): Mat2 | undefined => {
-      const path = pathsRef.current;
-      const order =
-        idx === 0 ? 'first' : idx === path.length - 1 ? 'last' : 'middle';
-      if (order === 'first') {
-        return [
-          [minCoordX, minCoordY],
-          [minCoordX, maxCoordY],
-        ];
-      } else if (order === 'last') {
-        return [
-          [maxCoordX, minCoordY],
-          [maxCoordX, maxCoordY],
-        ];
-      } else if (order === 'middle') {
-        const prevX = path.getPoint(idx - 1)!.coord[0];
-        const nextX = path.getPoint(idx + 1)!.coord[0];
-        return [
-          [prevX, minCoordY],
-          [nextX, maxCoordY],
-        ];
-      }
-      return undefined;
-    },
-    [maxCoordX, maxCoordY, minCoordX, minCoordY]
-  );
-
   return (
     <svg
       ref={elemRef}
@@ -169,21 +142,25 @@ const Graph = ({
           height={Math.max(paddedHeight, 0)}
           fill="grey"
         />
-        {pathsRef.current.points.map((aPoint, idx) => {
+        {usedPath.points.map((aPoint, idx) => {
           if (idx === 0) return null;
           return (
             <Link
               key={`graph-link-${aPoint.uuid}`}
-              beginPoint={pathsRef.current.getPoint(idx - 1)!}
+              beginPoint={usedPath.getPoint(idx - 1)!}
               endPoint={aPoint}
             />
           );
         })}
-        {pathsRef.current.points.map((aPoint, idx) => {
+        {usedPath.points.map((aPoint, idx) => {
           return (
             <Point
               key={`graph-point-${aPoint.uuid}`}
               point={aPoint}
+              {...(idx > 0 && { prevPt: usedPath.getPoint(idx - 1)! })}
+              {...(idx < usedPath.points.length - 1 && {
+                nextPt: usedPath.getPoint(idx + 1)!,
+              })}
               idx={idx}
             />
           );
