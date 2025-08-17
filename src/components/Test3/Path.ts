@@ -8,6 +8,10 @@ export class Path implements Subscribable<PointValue> {
     this.#points = [beginPoint, endPoint];
   }
 
+  get points(): [Point, Point] {
+    return this.#points;
+  }
+
   get beginPt(): Point {
     return this.#points[0];
   }

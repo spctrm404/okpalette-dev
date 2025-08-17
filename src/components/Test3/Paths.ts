@@ -1,7 +1,7 @@
 import { Point, type PointValue } from './Point';
 import { Path } from './Path';
 
-class Paths {
+export class Paths {
   #points: Point[];
   #paths: Path[];
 
@@ -49,15 +49,14 @@ class Paths {
       if (pt.length === 2) {
         const point = new Point(pt as PointValue);
         paths.addPoint(point);
-      } else if (pt.length === 3) {
-      } else if (pt.length === 6) {
       }
       if (idx > 0) {
-        const prevPoint = paths.getPoint(idx - 1);
-        const currPoint = paths.getPoint(idx);
-        const path = new Path(prevPoint!, currPoint!);
+        const prevPt = paths.getPoint(idx - 1);
+        const currPt = paths.getPoint(idx);
+        const path = new Path(prevPt!, currPt!);
         paths.addPath(path);
       }
     });
+    return paths;
   }
 }
