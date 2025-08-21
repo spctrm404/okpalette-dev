@@ -2,31 +2,32 @@ export interface Observer<T> {
   update: (state: T) => void;
 }
 
-export interface Subject<T> {
-  value: T;
+export interface ISubject<T> {
+  state: T;
   subscribe: (observer: Observer<T>) => void;
   unsubscribe: (observer: Observer<T>) => void;
+  unsubscribeAll: () => void;
   notify: () => void;
 }
 
-export class Observable<T> implements Subject<T> {
+export class Subject<T> implements ISubject<T> {
   #observers: Observer<T>[];
-  #value: T;
+  #state: T;
 
-  constructor(initial: T) {
+  constructor(initialState: T) {
     this.#observers = [];
-    this.#value = initial;
+    this.#state = initialState;
   }
 
   get observers() {
     return this.#observers;
   }
 
-  get value() {
-    return this.#value;
+  get state() {
+    return this.#state;
   }
-  set value(newValue: T) {
-    this.#value = newValue;
+  set state(newState: T) {
+    this.#state = newState;
     this.notify();
   }
 
@@ -38,7 +39,11 @@ export class Observable<T> implements Subject<T> {
     this.#observers = this.#observers.filter((obs) => obs !== observer);
   }
 
+  unsubscribeAll(): void {
+    this.#observers = [];
+  }
+
   notify() {
-    this.#observers.forEach((observer) => observer.update(this.#value));
+    this.#observers.forEach((observer) => observer.update(this.#state));
   }
 }
