@@ -1,7 +1,7 @@
-import { Point } from './Point'; // Importing the subject
+import type { AnyPoint } from '@/models/FnPath';
 
 type prop = {
-  point: Point;
+  point: AnyPoint;
   idx: number;
 };
 
@@ -9,7 +9,8 @@ const CtrlPointXComp = ({ point, idx }: prop) => {
   console.log('render CtrlPointXComp', idx);
 
   const changeState = () => {
-    point.x += 1;
+    const [x, y] = point.coord;
+    point.coord = [x + 1, y];
   };
 
   return (

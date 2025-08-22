@@ -1,33 +1,32 @@
-import type { Coord, PointProp, Range } from './FnPath.type';
+import type { Coord, PointObsProps } from './FnPath.type';
 import { Subject } from '@/models/Observable';
 
-export class Point<T extends PointProp = PointProp> extends Subject<T> {
-  constructor(initialState: T) {
-    super(initialState);
-    this.state.uuid = crypto.randomUUID();
+export class Point<T extends PointObsProps = PointObsProps>
+  extends Subject<T>
+  implements PointObsProps
+{
+  #coord: Coord;
+  #id: string;
+
+  constructor(coord: Coord) {
+    super();
+    this.#coord = coord;
+    this.#id = crypto.randomUUID();
   }
 
   get coord(): Coord {
-    return this.state.coord;
+    return this.#coord;
   }
   set coord(coord: Coord) {
-    this.state.coord = coord;
+    this.#coord = coord;
     this.notify();
   }
 
   get id(): string {
-    return this.state.uuid!;
+    return this.#id;
   }
   set id(id: string) {
-    this.state.uuid = id;
-    this.notify();
-  }
-
-  get rangeX(): Range | undefined {
-    return this.state.rangeX;
-  }
-  set rangeX(rangeX: Range | undefined) {
-    this.state.rangeX = rangeX;
+    this.#id = id;
     this.notify();
   }
 

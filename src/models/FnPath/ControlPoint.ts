@@ -1,48 +1,49 @@
-import type { AnyPoint, Coord, ControlPointProp } from './FnPath.type';
+import type { AnyPoint, Coord, ControlPtObsProps } from './FnPath.type';
 import type { BezierPoint } from './BezierPoint';
 import { Point } from './Point';
 import { map } from '@/utils';
 
-export class ControlPoint extends Point<ControlPointProp> {
+export class ControlPoint
+  extends Point<ControlPtObsProps>
+  implements ControlPtObsProps
+{
   #initialAbsCoord: Coord;
+  #parentPt: BezierPoint;
+  #neighborPt: AnyPoint | undefined;
+  #twinPt: ControlPoint | undefined;
+  #isInitialized: boolean = false;
 
   constructor(parentPt: BezierPoint, initialAbsCoord: Coord) {
-    super({
-      coord: [0, 0],
-      parentPt,
-      isInitialized: false,
-    } as ControlPointProp);
+    super([0, 0]);
     this.#initialAbsCoord = initialAbsCoord;
+    this.#parentPt = parentPt;
   }
 
   get parentPt(): BezierPoint {
-    return this.state.parentPt;
+    return this.#parentPt;
   }
 
   get neighborPt(): AnyPoint | undefined {
-    return this.state.neighborPt;
+    return this.#neighborPt;
   }
   set neighborPt(neighborPt: AnyPoint | undefined) {
-    this.state.neighborPt = neighborPt;
+    this.#neighborPt = neighborPt;
     this.notify();
   }
 
-  get twinPt(): ControlPoint | undefined {
-    return this.state.twinPt;
+  get twinPt(): ControlPoint {
+    return this.#twinPt!;
   }
-  set twinPt(twinPt: ControlPoint | undefined) {
-    this.state.twinPt = twinPt;
+  set twinPt(twinPt: ControlPoint) {
+    this.#twinPt = twinPt;
     this.notify();
-  }
-  get hasTwin(): boolean {
-    return this.state.twinPt !== undefined;
   }
 
   get isInitialized(): boolean {
-    return this.state.isInitialized;
+    return this.#isInitialized;
   }
   get isUsable(): boolean {
-    return this.neighborPt !== null && this.isInitialized;
+    return this.neighborPt !== undefined && this.isInitialized;
   }
   get isActive(): boolean {
     const [x, y] = this.coord;
@@ -79,7 +80,8 @@ export class ControlPoint extends Point<ControlPointProp> {
       [0, 0],
       [1, 1]
     ) as Coord;
-    this.state.isInitialized = true;
+    this.#isInitialized = true;
+    this.notify();
   }
 
   syncTwin(syncLength = false): void {

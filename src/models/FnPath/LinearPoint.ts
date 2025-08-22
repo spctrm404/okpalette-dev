@@ -1,8 +1,11 @@
-import type { Coord, LinearPointProp } from './FnPath.type';
-import { Point } from './Point';
+import type { Coord, LinearPtObsProps } from './FnPath.type';
+import { FnPoint } from './FnPoint';
 
-export class LinearPoint extends Point<LinearPointProp> {
+export class LinearPoint
+  extends FnPoint<LinearPtObsProps>
+  implements LinearPtObsProps
+{
   constructor(coord: Coord) {
-    super({ coord } as LinearPointProp);
+    super(coord);
   }
 }

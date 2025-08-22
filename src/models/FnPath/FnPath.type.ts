@@ -1,34 +1,41 @@
-import type { ControlPoint } from './ControlPoint';
 import type { LinearPoint } from './LinearPoint';
 import type { BezierPoint } from './BezierPoint';
 import type { ExponentialPoint } from './ExponentialPoint';
+import type { ControlPoint } from './ControlPoint';
 
 export type Coord = [number, number];
 export type Range = [number | undefined, number | undefined];
 
-export type PointProp = {
+export interface PointObsProps {
   coord: Coord;
-  rangeX: Range | undefined;
-  uuid: string | undefined;
-};
-
-export type LinearPointProp = PointProp;
-export type ControlPointProp = PointProp & {
-  parentPt: BezierPoint;
-  neighborPt: AnyPoint | undefined;
-  twinPt: ControlPoint | undefined;
-  isInitialized: boolean;
-};
-export type BezierPointProp = PointProp & {
+  id: string;
+}
+export interface FnPtObsProps extends PointObsProps {
   prevPt: AnyPoint | undefined;
   nextPt: AnyPoint | undefined;
-  prevCp: ControlPoint | undefined;
-  nextCp: ControlPoint | undefined;
-};
-export type ExponentialPointProp = PointProp & {
+  rangeX: Range;
+}
+export type LinearPtObsProps = FnPtObsProps;
+export interface ControlPtObsProps extends PointObsProps {
+  parentPt: BezierPoint;
+  neighborPt: AnyPoint | undefined;
+  twinPt: ControlPoint;
+  isInitialized: boolean;
+  isUsable: boolean;
+  isActive: boolean;
+  absCoord: Coord;
+}
+export interface BezierPtObsProps extends FnPtObsProps {
+  prevCp: ControlPoint;
+  nextCp: ControlPoint;
+}
+export interface ExponentialPtObsProps extends FnPtObsProps {
   exponent: number;
-};
+}
 
 export type AnyPoint = LinearPoint | BezierPoint | ExponentialPoint;
 
-export type Path = [AnyPoint, AnyPoint];
+// export type AnyPoint =
+//   | LinearPtObsProps
+//   | BezierPtObsProps
+//   | ExponentialPtObsProps;

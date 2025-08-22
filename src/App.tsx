@@ -4,6 +4,7 @@ import ControlComponent from '@/components/Test2/ControlComponent';
 import Observable from '@/components/Test2/Observable';
 import { useRef } from 'react';
 import Test3 from '@/components/Test3/Test3';
+import Test4 from '@/components/Test4/Test4';
 
 function App() {
   const observable1 = useRef(new Observable<number>(0)).current;
@@ -22,7 +23,8 @@ function App() {
     //     <ControlComponent observable={observable2} />
     //   </div>
     // </div>
-    <Test3 />
+    // <Test3 />
+    <Test4 />
   );
 }
 

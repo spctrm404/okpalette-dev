@@ -1,36 +1,35 @@
-import type { AnyPoint, Coord, BezierPointProp } from './FnPath.type';
-import { Point } from './Point';
+import type { AnyPoint, Coord, BezierPtObsProps } from './FnPath.type';
+import { FnPoint } from './FnPoint';
 import { ControlPoint } from './ControlPoint';
 
-export class BezierPoint extends Point<BezierPointProp> {
-  constructor(coord: Coord, prevCp?: Coord, nextCp?: Coord) {
-    super({
-      coord,
-    } as BezierPointProp);
-    this.state.prevCp = new ControlPoint(this, prevCp || coord);
-    this.state.nextCp = new ControlPoint(this, nextCp || coord);
-    this.state.prevCp.twinPt = this.state.nextCp;
-    this.state.nextCp.twinPt = this.state.prevCp;
-  }
+export class BezierPoint
+  extends FnPoint<BezierPtObsProps>
+  implements BezierPtObsProps
+{
+  #prevCp: ControlPoint;
+  #nextCp: ControlPoint;
 
-  get prevPt(): AnyPoint | undefined {
-    return this.state.prevCp?.neighborPt;
-  }
-  get nextPt(): AnyPoint | undefined {
-    return this.state.nextCp?.neighborPt;
+  constructor(coord: Coord, prevCp?: Coord, nextCp?: Coord) {
+    super(coord);
+    this.#prevCp = new ControlPoint(this, prevCp || coord);
+    this.#nextCp = new ControlPoint(this, nextCp || coord);
+    this.prevCp.twinPt = this.nextCp;
+    this.nextCp.twinPt = this.prevCp;
   }
 
   set prevPt(prevPt: AnyPoint | undefined) {
-    this.prevCp!.neighborPt = prevPt;
+    super.prevPt = prevPt;
+    this.prevCp.neighborPt = prevPt;
   }
   set nextPt(nextPt: AnyPoint | undefined) {
-    this.nextCp!.neighborPt = nextPt;
+    super.nextPt = nextPt;
+    this.nextCp.neighborPt = nextPt;
   }
 
   get prevCp(): ControlPoint {
-    return this.state.prevCp!;
+    return this.#prevCp;
   }
   get nextCp(): ControlPoint {
-    return this.state.nextCp!;
+    return this.#nextCp;
   }
 }

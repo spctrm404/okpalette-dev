@@ -1,12 +1,12 @@
-import { Paths } from './Paths';
+import { FnPaths } from '@/models/FnPath';
 import CtrlPointXComp from './CtrlPointXComp';
 import CtrlPointYComp from './CtrlPointYComp';
 import ObsPathComp from './ObsPathComp';
 import { useRef } from 'react';
 
 const Test3 = () => {
-  const paths1 = useRef<Paths>(
-    Paths.fromArray([
+  const paths1 = useRef<FnPaths>(
+    FnPaths.fromArray([
       [0, 0],
       [25, 0.5],
       [50, 0.25],
@@ -14,8 +14,8 @@ const Test3 = () => {
       [100, 1],
     ])
   ).current;
-  const paths2 = useRef<Paths>(
-    Paths.fromArray([
+  const paths2 = useRef<FnPaths>(
+    FnPaths.fromArray([
       [0, 0],
       [100, 1],
     ])
@@ -29,9 +29,15 @@ const Test3 = () => {
       <div>
         <h1>Set1</h1>
         <div style={{ display: 'flex', gap: '2rem' }}>
-          {paths1?.paths.map((aPath, idx) => {
+          {paths1?.points.map((aPoint, idx) => {
+            if (idx < 1) return;
             return (
-              <ObsPathComp key={`paths1-path-${idx}`} path={aPath} idx={idx} />
+              <ObsPathComp
+                key={`paths1-path-${idx}`}
+                beginPt={aPoint.prevPt!}
+                endPt={aPoint}
+                idx={idx}
+              />
             );
           })}
         </div>
@@ -46,34 +52,6 @@ const Test3 = () => {
                 />
                 <CtrlPointYComp
                   key={`paths1-point-y-${idx}`}
-                  point={aPoint}
-                  idx={idx}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <div>
-        <h1>Set2</h1>
-        <div style={{ display: 'flex', gap: '2rem' }}>
-          {paths2?.paths.map((aPath, idx) => {
-            return (
-              <ObsPathComp key={`paths2-path-${idx}`} path={aPath} idx={idx} />
-            );
-          })}
-        </div>
-        <div style={{ display: 'flex', gap: '2rem' }}>
-          {paths2?.points.map((aPoint, idx) => {
-            return (
-              <div key={`paths2-point-${idx}`}>
-                <CtrlPointXComp
-                  key={`paths2-point-x-${idx}`}
-                  point={aPoint}
-                  idx={idx}
-                />
-                <CtrlPointYComp
-                  key={`paths2-point-y-${idx}`}
                   point={aPoint}
                   idx={idx}
                 />
