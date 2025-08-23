@@ -1,4 +1,5 @@
-import { Lightness } from '@/composition/Lightness';
+// import { Lightness } from '@/composition/Lightness';
+import { Lightness } from '@/composition/Lightness2';
 import ObserverComponent from '@/components/Test2/ObserverComponent';
 import ControlComponent from '@/components/Test2/ControlComponent';
 import Observable from '@/components/Test2/Observable';
@@ -7,9 +8,6 @@ import Test3 from '@/components/Test3/Test3';
 import Test4 from '@/components/Test4/Test4';
 
 function App() {
-  const observable1 = useRef(new Observable<number>(0)).current;
-  const observable2 = useRef(new Observable<number>(100)).current;
-
   return (
     // <div style={{ display: 'flex', gap: '2rem' }}>
     //   <div>
@@ -24,7 +22,17 @@ function App() {
     //   </div>
     // </div>
     // <Test3 />
-    <Test4 />
+    // <Test4 />
+    <Lightness
+      pathsArray={[
+        [0, 0],
+        [20, 50],
+        [40, 0],
+        [60, 75, 40, 75, 80, 75],
+        [80, 0, 1 / 2.2],
+        [100, 100],
+      ]}
+    />
   );
 }
 

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { AnyPoint } from '@/models/FnPath';
+import type { AnyFnPtInstance } from '@/models/FnPaths';
 
 type prop = {
-  beginPt: AnyPoint;
-  endPt: AnyPoint;
+  beginPt: AnyFnPtInstance;
+  endPt: AnyFnPtInstance;
   idx: number;
 };
 

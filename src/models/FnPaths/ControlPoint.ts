@@ -1,4 +1,4 @@
-import type { AnyPoint, Coord, ControlPtObsProps } from './FnPath.type';
+import type { AnyFnPtInstance, Coord, ControlPtObsProps } from './FnPath.type';
 import type { BezierPoint } from './BezierPoint';
 import { Point } from './Point';
 import { map } from '@/utils';
@@ -46,10 +46,10 @@ export class ControlPoint
     return this.observable.parentPt;
   }
 
-  get neighborPt(): AnyPoint | undefined {
+  get neighborPt(): AnyFnPtInstance | undefined {
     return this.observable.neighborPt;
   }
-  set neighborPt(neighborPt: AnyPoint | undefined) {
+  set neighborPt(neighborPt: AnyFnPtInstance | undefined) {
     this.observable = {
       ...this.observable,
       neighborPt,

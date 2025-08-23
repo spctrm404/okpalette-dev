@@ -1,11 +1,9 @@
-import type { AnyPoint } from './FnPath.type';
-import type { FnPath } from './FnPath';
+import type { AnyFnPtInstance } from './FnPath.type';
 import { LinearPoint } from './LinearPoint';
 import { BezierPoint } from './BezierPoint';
 import { ExponentialPoint } from './ExponentialPoint';
 
-export type Points = AnyPoint[];
-export type Paths = FnPath[];
+export type Points = AnyFnPtInstance[];
 
 export class FnPaths {
   #points: Points;
@@ -22,15 +20,15 @@ export class FnPaths {
     return this.#points.length;
   }
 
-  getPoint(idx: number): AnyPoint | undefined {
+  getPoint(idx: number): AnyFnPtInstance | undefined {
     return this.#points[idx];
   }
 
-  getPointIdx(point: AnyPoint): number {
+  getPointIdx(point: AnyFnPtInstance): number {
     return this.#points.indexOf(point);
   }
 
-  addPoint(point: AnyPoint, idx?: number): void {
+  addPoint(point: AnyFnPtInstance, idx?: number): void {
     if (idx === undefined) {
       this.#points.push(point);
       this.updateLinks(this.pointCnt - 1);
@@ -40,7 +38,7 @@ export class FnPaths {
     }
   }
 
-  removePoint(targetPt: AnyPoint): void {
+  removePoint(targetPt: AnyFnPtInstance): void {
     const targetPtIdx = this.getPointIdx(targetPt);
     if (targetPtIdx < 0) return;
     const leftPt = this.#points[targetPtIdx - 1];
@@ -55,7 +53,7 @@ export class FnPaths {
       rightPt.prevCp.initializeCoordFromAbsCoord();
   }
 
-  overridePoint(targetPt: AnyPoint, newPt: AnyPoint): void {
+  overridePoint(targetPt: AnyFnPtInstance, newPt: AnyFnPtInstance): void {
     const targetPtIdx = this.getPointIdx(targetPt);
     if (targetPtIdx < 0) return;
     const { id: oldId } = targetPt;

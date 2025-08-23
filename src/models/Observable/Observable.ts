@@ -3,7 +3,7 @@ export interface Observer {
 }
 
 export interface Subject {
-  subscribe: (observer: Observer) => void;
+  subscribe: (observer: Observer) => () => void;
   unsubscribe: (observer: Observer) => void;
   unsubscribeAll: () => void;
   notify: () => void;
@@ -23,6 +23,9 @@ export class Observable<T> implements Subject {
   }
   subscribe(observer: Observer) {
     this.#observers.push(observer);
+    return () => {
+      this.unsubscribe(observer);
+    };
   }
   unsubscribe(observer: Observer) {
     this.#observers = this.#observers.filter((obs) => obs !== observer);

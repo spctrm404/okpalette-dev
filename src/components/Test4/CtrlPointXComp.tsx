@@ -1,7 +1,7 @@
-import type { AnyPoint } from '@/models/FnPath';
+import type { AnyFnPtInstance } from '@/models/FnPaths';
 
 type prop = {
-  point: AnyPoint;
+  point: AnyFnPtInstance;
   idx: number;
 };
 

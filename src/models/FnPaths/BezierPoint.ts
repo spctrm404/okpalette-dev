@@ -1,4 +1,4 @@
-import type { AnyPoint, Coord, BezierPtObsProps } from './FnPath.type';
+import type { AnyFnPtInstance, Coord, BezierPtObsProps } from './FnPath.type';
 import { FnPoint } from './FnPoint';
 import { ControlPoint } from './ControlPoint';
 
@@ -17,11 +17,11 @@ export class BezierPoint
     this.nextCp.twinPt = this.prevCp;
   }
 
-  set prevPt(prevPt: AnyPoint | undefined) {
+  set prevPt(prevPt: AnyFnPtInstance | undefined) {
     super.prevPt = prevPt;
     this.prevCp.neighborPt = prevPt;
   }
-  set nextPt(nextPt: AnyPoint | undefined) {
+  set nextPt(nextPt: AnyFnPtInstance | undefined) {
     super.nextPt = nextPt;
     this.nextCp.neighborPt = nextPt;
   }

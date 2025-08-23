@@ -1,4 +1,4 @@
-import { FnPaths } from '@/models/FnPath';
+import { FnPaths } from '@/models/FnPaths';
 import CtrlPointXComp from './CtrlPointXComp';
 import CtrlPointYComp from './CtrlPointYComp';
 import ObsPathComp from './ObsPathComp';
