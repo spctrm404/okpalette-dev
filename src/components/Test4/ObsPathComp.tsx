@@ -1,6 +1,5 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { AnyPoint } from '@/models/FnPath';
-import { BezierPoint, ExponentialPoint, LinearPoint } from '@/models/FnPath';
 
 type prop = {
   beginPt: AnyPoint;
@@ -10,35 +9,33 @@ type prop = {
 
 const ObsPathComp = ({ beginPt, endPt, idx }: prop) => {
   console.log('render ObsPathComp', idx);
-  const [render, setRender] = useReducer((x) => x + 1, 0);
+  const [beginPtState, setBeginPtState] = useState(beginPt.observable);
+  const [endPtState, setEndPtState] = useState(endPt.observable);
 
   useEffect(() => {
-    const updateBeginPt = () => {
-      setRender();
+    const beginPtObserver = {
+      update: () => {
+        setBeginPtState(beginPt.observable);
+      },
     };
-    const updateEndPt = () => {
-      setRender();
+    const endPtObserver = {
+      update: () => {
+        setEndPtState(endPt.observable);
+      },
     };
-    beginPt.subscribe(updateBeginPt);
-    endPt.subscribe(updateEndPt);
+    beginPt.subscribe(beginPtObserver);
+    endPt.subscribe(endPtObserver);
     return () => {
-      beginPt.unsubscribe(updateBeginPt);
-      endPt.unsubscribe(updateEndPt);
+      beginPt.unsubscribe(beginPtObserver);
+      endPt.unsubscribe(endPtObserver);
     };
   }, [beginPt, endPt]);
 
   return (
     <div>
       <p>ObsPathComp {idx}</p>
-      <p>
-        {beginPt instanceof BezierPoint
-          ? 'Bezier'
-          : beginPt instanceof ExponentialPoint
-          ? 'Exponential'
-          : 'Linear'}
-      </p>
-      <p>Begin Point: {JSON.stringify(beginPt.coord)}</p>
-      <p>End Point: {JSON.stringify(endPt.coord)}</p>
+      <p>{JSON.stringify(beginPtState)}</p>
+      <p>{JSON.stringify(endPtState)}</p>
     </div>
   );
 };

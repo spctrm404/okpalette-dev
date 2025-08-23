@@ -6,13 +6,13 @@ export class BezierPoint
   extends FnPoint<BezierPtObsProps>
   implements BezierPtObsProps
 {
-  #prevCp: ControlPoint;
-  #nextCp: ControlPoint;
-
   constructor(coord: Coord, prevCp?: Coord, nextCp?: Coord) {
     super(coord);
-    this.#prevCp = new ControlPoint(this, prevCp || coord);
-    this.#nextCp = new ControlPoint(this, nextCp || coord);
+    this.observable = {
+      ...this.observable,
+      prevCp: new ControlPoint(this, prevCp || coord),
+      nextCp: new ControlPoint(this, nextCp || coord),
+    };
     this.prevCp.twinPt = this.nextCp;
     this.nextCp.twinPt = this.prevCp;
   }
@@ -27,9 +27,9 @@ export class BezierPoint
   }
 
   get prevCp(): ControlPoint {
-    return this.#prevCp;
+    return this.observable.prevCp;
   }
   get nextCp(): ControlPoint {
-    return this.#nextCp;
+    return this.observable.nextCp;
   }
 }

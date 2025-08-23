@@ -5,18 +5,21 @@ export class ExponentialPoint
   extends FnPoint<ExponentialPtObsProps>
   implements ExponentialPtObsProps
 {
-  #exponent: number;
-
   constructor(coord: Coord, exponent: number) {
     super(coord);
-    this.#exponent = exponent;
+    this.observable = {
+      ...this.observable,
+      exponent,
+    };
   }
 
   get exponent(): number {
-    return this.#exponent;
+    return this.observable.exponent;
   }
   set exponent(exponent: number) {
-    this.#exponent = exponent;
-    this.notify();
+    this.observable = {
+      ...this.observable,
+      exponent,
+    };
   }
 }

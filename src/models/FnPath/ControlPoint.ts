@@ -8,59 +8,79 @@ export class ControlPoint
   implements ControlPtObsProps
 {
   #initialAbsCoord: Coord;
-  #parentPt: BezierPoint;
-  #neighborPt: AnyPoint | undefined;
-  #twinPt: ControlPoint | undefined;
-  #isInitialized: boolean = false;
+  #isInitialized = false;
 
   constructor(parentPt: BezierPoint, initialAbsCoord: Coord) {
     super([0, 0]);
     this.#initialAbsCoord = initialAbsCoord;
-    this.#parentPt = parentPt;
+    this.#isInitialized = false;
+    this.observable = {
+      ...this.observable,
+      parentPt,
+      neighborPt: undefined,
+      twinPt: undefined,
+      isInitialized: (): boolean => {
+        return this.#isInitialized;
+      },
+      isUsable: (): boolean => {
+        return this.neighborPt !== undefined && this.isInitialized();
+      },
+      isActive: (): boolean => {
+        const [x, y] = this.coord;
+        return x !== 0 || y !== 0;
+      },
+      absCoord: (): Coord => {
+        if (!this.neighborPt) return this.#initialAbsCoord;
+        return map(
+          this.coord,
+          [0, 0],
+          [1, 1],
+          this.parentPt.coord,
+          this.neighborPt.coord
+        ) as Coord;
+      },
+    };
   }
 
   get parentPt(): BezierPoint {
-    return this.#parentPt;
+    return this.observable.parentPt;
   }
 
   get neighborPt(): AnyPoint | undefined {
-    return this.#neighborPt;
+    return this.observable.neighborPt;
   }
   set neighborPt(neighborPt: AnyPoint | undefined) {
-    this.#neighborPt = neighborPt;
-    this.notify();
+    this.observable = {
+      ...this.observable,
+      neighborPt,
+    };
   }
 
   get twinPt(): ControlPoint {
-    return this.#twinPt!;
+    return this.observable.twinPt!;
   }
   set twinPt(twinPt: ControlPoint) {
-    this.#twinPt = twinPt;
-    this.notify();
+    this.observable = {
+      ...this.observable,
+      twinPt,
+    };
   }
 
-  get isInitialized(): boolean {
-    return this.#isInitialized;
+  isInitialized(): boolean {
+    return this.observable.isInitialized();
   }
-  get isUsable(): boolean {
-    return this.neighborPt !== undefined && this.isInitialized;
+  isUsable(): boolean {
+    return this.observable.isUsable();
   }
-  get isActive(): boolean {
+  isActive(): boolean {
     const [x, y] = this.coord;
     return x !== 0 || y !== 0;
   }
 
-  get absCoord(): Coord {
-    if (!this.neighborPt) return this.#initialAbsCoord;
-    return map(
-      this.coord,
-      [0, 0],
-      [1, 1],
-      this.parentPt.coord,
-      this.neighborPt.coord
-    ) as Coord;
+  absCoord(): Coord {
+    return this.observable.absCoord();
   }
-  set absCoord(absCoord: Coord) {
+  setAbsCoord(absCoord: Coord) {
     if (!this.neighborPt) return;
     this.coord = map(
       absCoord,
@@ -81,27 +101,28 @@ export class ControlPoint
       [1, 1]
     ) as Coord;
     this.#isInitialized = true;
-    this.notify();
   }
 
   syncTwin(syncLength = false): void {
     if (!this.twinPt) return;
-    const vec2ToParent = Point.sub(this.parentPt.coord, this.absCoord);
+    const vec2ToParent = Point.sub(this.parentPt.coord, this.absCoord());
     if (syncLength) {
-      this.twinPt.absCoord = Point.add(this.parentPt.coord, vec2ToParent);
+      const lengthSyncedCoord = Point.add(this.parentPt.coord, vec2ToParent);
+      this.twinPt.setAbsCoord(lengthSyncedCoord);
     } else {
       const [toParentX, toParentY] = vec2ToParent;
       const angle = Math.atan2(toParentY, toParentX);
       const [fromParentToTwinX, fromParentToTwinY] = Point.sub(
-        this.twinPt.absCoord,
+        this.twinPt.absCoord(),
         this.parentPt.coord
       );
       const length = Math.hypot(fromParentToTwinX, fromParentToTwinY);
       const [px, py] = this.parentPt.coord;
-      this.twinPt.absCoord = [
+      const angleSyncedCoord = [
         px + length * Math.cos(angle),
         py + length * Math.sin(angle),
       ] as Coord;
+      this.twinPt.setAbsCoord(angleSyncedCoord);
     }
   }
 }

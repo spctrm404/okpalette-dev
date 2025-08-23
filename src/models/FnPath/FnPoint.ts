@@ -5,30 +5,39 @@ export class FnPoint<T extends FnPtObsProps = FnPtObsProps>
   extends Point<T>
   implements FnPtObsProps
 {
-  #prevPt: AnyPoint | undefined;
-  #nextPt: AnyPoint | undefined;
-
   constructor(coord: Coord) {
     super(coord);
+    this.observable = {
+      ...this.observable,
+      prevPt: undefined,
+      nextPt: undefined,
+      rangeX: (): Range => {
+        return [this.prevPt?.coord[0], this.nextPt?.coord[0]];
+      },
+    };
   }
 
   get prevPt(): AnyPoint | undefined {
-    return this.#prevPt;
+    return this.observable.prevPt;
   }
   get nextPt(): AnyPoint | undefined {
-    return this.#nextPt;
+    return this.observable.nextPt;
   }
 
   set prevPt(prevPt: AnyPoint | undefined) {
-    this.#prevPt = prevPt;
-    this.notify();
+    this.observable = {
+      ...this.observable,
+      prevPt,
+    };
   }
   set nextPt(nextPt: AnyPoint | undefined) {
-    this.#nextPt = nextPt;
-    this.notify();
+    this.observable = {
+      ...this.observable,
+      nextPt,
+    };
   }
 
-  get rangeX(): Range {
-    return [this.prevPt?.coord[0], this.nextPt?.coord[0]];
+  rangeX(): Range {
+    return this.observable.rangeX();
   }
 }

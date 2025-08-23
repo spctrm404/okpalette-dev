@@ -13,17 +13,17 @@ export interface PointObsProps {
 export interface FnPtObsProps extends PointObsProps {
   prevPt: AnyPoint | undefined;
   nextPt: AnyPoint | undefined;
-  rangeX: Range;
+  rangeX: () => Range;
 }
 export type LinearPtObsProps = FnPtObsProps;
 export interface ControlPtObsProps extends PointObsProps {
   parentPt: BezierPoint;
   neighborPt: AnyPoint | undefined;
-  twinPt: ControlPoint;
-  isInitialized: boolean;
-  isUsable: boolean;
-  isActive: boolean;
-  absCoord: Coord;
+  twinPt: ControlPoint | undefined;
+  isInitialized: () => boolean;
+  isUsable: () => boolean;
+  isActive: () => boolean;
+  absCoord: () => Coord;
 }
 export interface BezierPtObsProps extends FnPtObsProps {
   prevCp: ControlPoint;
