@@ -3,7 +3,7 @@ import {
   type AnyFnPtInstance,
   type AnyFnPtObsProps,
   type ControlPtObsProps,
-  type Coord,
+  type Range,
   BezierPoint,
 } from '@/models/FnPaths';
 import { usePoint } from '@/hooks/FnPaths';
@@ -32,48 +32,60 @@ const Node = ({ point, idx }: PointProps) => {
   const pos = coordToPos(ptObsable.coord);
 
   const controlPt = useMemo(() => {
-    if (prevCpObsable?.isActive || nextCpObsable?.isActive) {
-      const [prevCpPosX, prevCpPosY] = prevCpObsable?.isActive
-        ? coordToPos(prevCpObsable.absCoord())
+    if (prevCpObsable?.isActive() || nextCpObsable?.isActive()) {
+      const [prevCpPosX, prevCpPosY] = prevCpObsable?.isActive()
+        ? coordToPos(prevCpObsable.getAbsCoord())
         : pos;
-      const [nextCpPosX, nextCpPosY] = nextCpObsable?.isActive
-        ? coordToPos(nextCpObsable.absCoord())
+      const [nextCpPosX, nextCpPosY] = nextCpObsable?.isActive()
+        ? coordToPos(nextCpObsable.getAbsCoord())
         : pos;
       return (
         <>
-          {prevCpObsable?.isActive && (
+          {prevCpObsable?.isActive() && (
             <path
               d={`M${pos[0]},${pos[1]} L${prevCpPosX},${prevCpPosY}`}
               stroke="blue"
             />
           )}
-          {nextCpObsable?.isActive && (
+          {nextCpObsable?.isActive() && (
             <path
               d={`M${pos[0]},${pos[1]} L${nextCpPosX},${nextCpPosY}`}
               stroke="blue"
             />
           )}
-          {prevCpObsable?.isActive && (
+          {prevCpObsable?.isActive() && (
             <Thumb
-              val={prevCpObsable.absCoord()}
+              val={prevCpObsable.getAbsCoord()}
               onMoving={(newVal) => {
                 prevCp?.setAbsCoord(newVal);
               }}
               {...(prevPtObsable && {
-                constraintX: [prevPtObsable.coord[0], pos[0]] as Coord,
-                constraintY: [prevPtObsable.coord[1], pos[1]] as Coord,
+                constraintX: [
+                  prevPtObsable.coord[0],
+                  ptObsable.coord[0],
+                ] as Range,
+                constraintY: [
+                  prevPtObsable.coord[1],
+                  ptObsable.coord[1],
+                ] as Range,
               })}
             />
           )}
-          {nextCpObsable?.isActive && (
+          {nextCpObsable?.isActive() && (
             <Thumb
-              val={nextCpObsable.absCoord()}
+              val={nextCpObsable.getAbsCoord()}
               onMoving={(newVal) => {
                 nextCp?.setAbsCoord(newVal);
               }}
               {...(nextPtObsable && {
-                constraintX: [nextPtObsable.coord[0], pos[0]] as Coord,
-                constraintY: [nextPtObsable.coord[1], pos[1]] as Coord,
+                constraintX: [
+                  nextPtObsable.coord[0],
+                  ptObsable.coord[0],
+                ] as Range,
+                constraintY: [
+                  nextPtObsable.coord[1],
+                  ptObsable.coord[1],
+                ] as Range,
               })}
             />
           )}
@@ -101,10 +113,10 @@ const Node = ({ point, idx }: PointProps) => {
         onMoving={(newVal) => {
           point.coord = newVal;
         }}
-        constraintX={ptObsable.rangeX()}
+        constraintX={ptObsable.getRangeX()}
       />
       <text x={pos[0] + 10} y={pos[1] - 10} fontSize={12} fill="black">
-        {JSON.stringify(ptObsable.rangeX())}
+        {JSON.stringify(ptObsable.getRangeX())}
       </text>
     </>
   );

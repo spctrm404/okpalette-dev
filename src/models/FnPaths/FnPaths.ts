@@ -45,12 +45,16 @@ export class FnPaths {
     const rightPt = this.#points[targetPtIdx + 1];
     targetPt.unsubscribeAll();
     this.#points.splice(targetPtIdx, 1);
-    leftPt.nextPt = rightPt;
-    rightPt.prevPt = leftPt;
-    if (leftPt instanceof BezierPoint && !leftPt.nextCp.isInitialized)
-      leftPt.nextCp.initializeCoordFromAbsCoord();
-    if (rightPt instanceof BezierPoint && !rightPt.prevCp.isInitialized)
-      rightPt.prevCp.initializeCoordFromAbsCoord();
+    if (leftPt) {
+      leftPt.nextPt = rightPt;
+      if (leftPt instanceof BezierPoint && !leftPt.nextCp.isInitialized())
+        leftPt.nextCp.initializeCoordFromAbsCoord();
+    }
+    if (rightPt) {
+      rightPt.prevPt = leftPt;
+      if (rightPt instanceof BezierPoint && !rightPt.prevCp.isInitialized())
+        rightPt.prevCp.initializeCoordFromAbsCoord();
+    }
   }
 
   overridePoint(targetPt: AnyFnPtInstance, newPt: AnyFnPtInstance): void {
@@ -71,20 +75,20 @@ export class FnPaths {
       point.prevPt = leftPt;
       point.nextPt = rightPt;
       if (point instanceof BezierPoint) {
-        if (!point.prevCp.isInitialized)
+        if (!point.prevCp.isInitialized())
           point.prevCp.initializeCoordFromAbsCoord();
-        if (!point.nextCp.isInitialized)
+        if (!point.nextCp.isInitialized())
           point.nextCp.initializeCoordFromAbsCoord();
       }
     }
     if (leftPt) {
       leftPt.nextPt = point;
-      if (leftPt instanceof BezierPoint && !leftPt.nextCp.isInitialized)
+      if (leftPt instanceof BezierPoint && !leftPt.nextCp.isInitialized())
         leftPt.nextCp.initializeCoordFromAbsCoord();
     }
     if (rightPt) {
       rightPt.prevPt = point;
-      if (rightPt instanceof BezierPoint && !rightPt.prevCp.isInitialized)
+      if (rightPt instanceof BezierPoint && !rightPt.prevCp.isInitialized())
         rightPt.prevCp.initializeCoordFromAbsCoord();
     }
   }

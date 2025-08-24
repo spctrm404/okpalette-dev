@@ -44,8 +44,8 @@ const Thumb = ({
       }
       if (constraintY) {
         const [minY, maxY] = constraintY;
-        const [minPosY] = coordToPos([0, minY]);
-        const [maxPosY] = coordToPos([0, maxY]);
+        const [, minPosY] = coordToPos([0, minY]);
+        const [, maxPosY] = coordToPos([0, maxY]);
         posY = clamp(posY, minPosY, maxPosY);
       }
       return [posX, posY];

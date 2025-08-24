@@ -42,12 +42,12 @@ const Link = ({ beginPt, endPt, idx }: LinkProps) => {
         const posY = map(powedY, 0, 1, beginPos[1], endPos[1]);
         dStr += ` L${posX},${posY}`;
       }
-    } else if (cp1Obsable?.isUsable || cp2Obsable?.isUsable) {
+    } else if (cp1Obsable?.isUsable() || cp2Obsable?.isUsable()) {
       const [cp1PosX, cp1PosY] = cp1Obsable
-        ? coordToPos(cp1Obsable.absCoord())
+        ? coordToPos(cp1Obsable.getAbsCoord())
         : beginPos;
       const [cp2PosX, cp2PosY] = cp2Obsable
-        ? coordToPos(cp2Obsable.absCoord())
+        ? coordToPos(cp2Obsable.getAbsCoord())
         : endPos;
       dStr += ` C${cp1PosX},${cp1PosY} ${cp2PosX},${cp2PosY} ${endPos[0]},${endPos[1]}`;
     } else {

@@ -17,6 +17,13 @@ export class BezierPoint
     this.nextCp.twinPt = this.prevCp;
   }
 
+  get prevPt(): AnyFnPtInstance | undefined {
+    return super.prevPt;
+  }
+  get nextPt(): AnyFnPtInstance | undefined {
+    return super.nextPt;
+  }
+
   set prevPt(prevPt: AnyFnPtInstance | undefined) {
     super.prevPt = prevPt;
     this.prevCp.neighborPt = prevPt;

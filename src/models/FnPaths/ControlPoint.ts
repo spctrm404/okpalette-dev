@@ -29,7 +29,7 @@ export class ControlPoint
         const [x, y] = this.coord;
         return x !== 0 || y !== 0;
       },
-      absCoord: (): Coord => {
+      getAbsCoord: (): Coord => {
         if (!this.neighborPt) return this.#initialAbsCoord;
         return map(
           this.coord,
@@ -77,8 +77,8 @@ export class ControlPoint
     return x !== 0 || y !== 0;
   }
 
-  absCoord(): Coord {
-    return this.observable.absCoord();
+  getAbsCoord(): Coord {
+    return this.observable.getAbsCoord();
   }
   setAbsCoord(absCoord: Coord) {
     if (!this.neighborPt) return;
@@ -105,7 +105,7 @@ export class ControlPoint
 
   syncTwin(syncLength = false): void {
     if (!this.twinPt) return;
-    const vec2ToParent = Point.sub(this.parentPt.coord, this.absCoord());
+    const vec2ToParent = Point.sub(this.parentPt.coord, this.getAbsCoord());
     if (syncLength) {
       const lengthSyncedCoord = Point.add(this.parentPt.coord, vec2ToParent);
       this.twinPt.setAbsCoord(lengthSyncedCoord);
@@ -113,7 +113,7 @@ export class ControlPoint
       const [toParentX, toParentY] = vec2ToParent;
       const angle = Math.atan2(toParentY, toParentX);
       const [fromParentToTwinX, fromParentToTwinY] = Point.sub(
-        this.twinPt.absCoord(),
+        this.twinPt.getAbsCoord(),
         this.parentPt.coord
       );
       const length = Math.hypot(fromParentToTwinX, fromParentToTwinY);
