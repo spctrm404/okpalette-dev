@@ -1,13 +1,14 @@
-import type { Vec2 } from '@/types';
-import type { GraphContextValue } from './Graph.context';
-import { GraphContext } from './Graph.context';
+import type { Coord } from '@/models/FnPaths';
+import { type GraphContextValue, GraphContext } from './Graph.context';
 import { useMemo } from 'react';
 
 type GraphProviderProps = {
   children: React.ReactNode;
-  coordToPos: (coord: Vec2) => Vec2;
-  posToCoord: (pos: Vec2) => Vec2;
-  clampPos: (pos: Vec2) => Vec2;
+  coordToPos: (coord: Coord) => Coord;
+  posToCoord: (pos: Coord) => Coord;
+  clampPos: (pos: Coord) => Coord;
+  thumbInteractionSize: number;
+  thumbDisplaySize: number;
 };
 
 export function GraphProvider({
@@ -15,10 +16,18 @@ export function GraphProvider({
   coordToPos,
   posToCoord,
   clampPos,
+  thumbInteractionSize,
+  thumbDisplaySize,
 }: GraphProviderProps) {
   const contextValue = useMemo<GraphContextValue>(
-    () => ({ coordToPos, posToCoord, clampPos }),
-    [coordToPos, posToCoord, clampPos]
+    () => ({
+      coordToPos,
+      posToCoord,
+      clampPos,
+      thumbInteractionSize,
+      thumbDisplaySize,
+    }),
+    [coordToPos, posToCoord, clampPos, thumbInteractionSize, thumbDisplaySize]
   );
 
   return (

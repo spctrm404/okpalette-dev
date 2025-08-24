@@ -1,85 +1,79 @@
 import { useMemo } from 'react';
-import type { Vec2 } from '@/types';
-import type { PointInstance } from '@/models/Paths';
-import { BezierPoint } from '@/models/Paths';
-import { usePoint } from '@/hooks/Paths';
+import {
+  type AnyFnPtInstance,
+  type AnyFnPtObsProps,
+  type ControlPtObsProps,
+  type Range,
+  BezierPoint,
+} from '@/models/FnPaths';
+import { usePoint } from '@/hooks/FnPaths';
 import { useGraph } from './Graph.context';
 import Thumb from './Graph.Thumb';
 
 type PointProps = {
-  point: PointInstance;
-  prevPt?: PointInstance;
-  nextPt?: PointInstance;
+  point: AnyFnPtInstance;
   idx: number;
 };
 
-const Node = ({ point, prevPt, nextPt, idx }: PointProps) => {
+const Node = ({ point, idx }: PointProps) => {
   console.log(`render: node${idx}`);
 
-  const prevCp = point instanceof BezierPoint ? point.prevCp : null;
-  const nextCp = point instanceof BezierPoint ? point.nextCp : null;
+  const prevCp = point instanceof BezierPoint ? point.prevCp : undefined;
+  const nextCp = point instanceof BezierPoint ? point.nextCp : undefined;
 
-  const trgPt = usePoint(point);
-  const trgPrevCp = usePoint(prevCp);
-  const trgNextCp = usePoint(nextCp);
-  const trgPrevPt = usePoint(prevPt || null);
-  const trgNextPt = usePoint(nextPt || null);
+  const ptProps = usePoint(point)! as AnyFnPtObsProps;
+  const prevPtProps = usePoint(point.prevPt);
+  const nextPtProps = usePoint(point.nextPt);
+  const prevCpProps = usePoint(prevCp) as ControlPtObsProps | undefined;
+  const nextCpProps = usePoint(nextCp) as ControlPtObsProps | undefined;
 
   const { coordToPos } = useGraph();
 
-  const pos = coordToPos(point.coord);
-
-  const constraintX = useMemo(
-    () =>
-      prevPt && nextPt
-        ? [prevPt.coord[0], nextPt.coord[0]]
-        : [point.coord[0], point.coord[0]],
-    [trgPt, trgPrevPt, trgNextPt]
-  );
+  const pos = coordToPos(ptProps.coord);
 
   const controlPt = useMemo(() => {
-    if (prevCp?.isActive || nextCp?.isActive) {
-      const [prevCpPosX, prevCpPosY] = prevCp?.isActive
-        ? coordToPos(prevCp.absCoord)
+    if (prevCpProps?.isActive() || nextCpProps?.isActive()) {
+      const [prevCpPosX, prevCpPosY] = prevCpProps?.isActive()
+        ? coordToPos(prevCpProps.getAbsCoord())
         : pos;
-      const [nextCpPosX, nextCpPosY] = nextCp?.isActive
-        ? coordToPos(nextCp.absCoord)
+      const [nextCpPosX, nextCpPosY] = nextCpProps?.isActive()
+        ? coordToPos(nextCpProps.getAbsCoord())
         : pos;
       return (
         <>
-          {prevCp?.isActive && (
+          {prevCpProps?.isActive() && (
             <path
               d={`M${pos[0]},${pos[1]} L${prevCpPosX},${prevCpPosY}`}
               stroke="blue"
             />
           )}
-          {nextCp?.isActive && (
+          {nextCpProps?.isActive() && (
             <path
               d={`M${pos[0]},${pos[1]} L${nextCpPosX},${nextCpPosY}`}
               stroke="blue"
             />
           )}
-          {prevCp?.isActive && (
+          {prevCpProps?.isActive() && (
             <Thumb
-              val={prevCp.absCoord}
+              coord={prevCpProps.getAbsCoord()}
               onMoving={(newVal) => {
-                prevCp.absCoord = newVal;
+                prevCp?.setAbsCoord(newVal);
               }}
-              {...(prevPt && {
-                constraintX: [prevPt.coord[0], point.coord[0]] as Vec2,
-                constraintY: [prevPt.coord[1], point.coord[1]] as Vec2,
+              {...(prevPtProps && {
+                rangeX: [prevPtProps.coord[0], ptProps.coord[0]] as Range,
+                rangeY: [prevPtProps.coord[1], ptProps.coord[1]] as Range,
               })}
             />
           )}
-          {nextCp?.isActive && (
+          {nextCpProps?.isActive() && (
             <Thumb
-              val={nextCp.absCoord}
+              coord={nextCpProps.getAbsCoord()}
               onMoving={(newVal) => {
-                nextCp.absCoord = newVal;
+                nextCp?.setAbsCoord(newVal);
               }}
-              {...(nextPt && {
-                constraintX: [nextPt.coord[0], point.coord[0]] as Vec2,
-                constraintY: [nextPt.coord[1], point.coord[1]] as Vec2,
+              {...(nextPtProps && {
+                rangeX: [nextPtProps.coord[0], ptProps.coord[0]] as Range,
+                rangeY: [nextPtProps.coord[1], ptProps.coord[1]] as Range,
               })}
             />
           )}
@@ -87,19 +81,38 @@ const Node = ({ point, prevPt, nextPt, idx }: PointProps) => {
       );
     }
     return null;
-  }, [coordToPos, trgPt, trgPrevCp, trgNextCp, trgPrevPt, trgNextPt]);
+  }, [
+    coordToPos,
+    nextCp,
+    prevCp,
+    ptProps,
+    prevPtProps,
+    nextPtProps,
+    prevCpProps,
+    nextCpProps,
+    pos,
+  ]);
 
   return (
     <>
       {controlPt}
       <Thumb
-        val={point.coord}
+        coord={ptProps.coord}
         tabIndex={idx}
         onMoving={(newVal) => {
           point.coord = newVal;
         }}
-        constraintX={constraintX as Vec2}
+        rangeX={ptProps.getRangeX()}
       />
+      <text
+        x={pos[0]}
+        y={pos[1] - 8}
+        fontSize={12}
+        fill="black"
+        textAnchor="middle"
+      >
+        {JSON.stringify(ptProps.getRangeX())}
+      </text>
     </>
   );
 };

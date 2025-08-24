@@ -1,65 +1,69 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { mergeProps, useHover, useMove, usePress } from 'react-aria';
 import type { Vec2 } from '@/types';
-import { clamp } from '@/utils';
-import { THUMB_DISPLAY_SIZE, THUMB_INTERACTION_SIZE } from './Graph.constants';
+import type { Coord, Range } from '@/models/FnPaths';
 import { useGraph } from './Graph.context';
 import classes from './_Thumb.module.scss';
 import clsx from 'clsx';
+import { clamp } from '@/utils';
 
 type ThumbProps = {
-  val: Vec2;
-  constraintX?: Vec2;
-  constraintY?: Vec2;
-  interactionSize?: number;
-  displaySize?: number;
+  coord: Coord;
+  rangeX?: Range;
+  rangeY?: Range;
   isSelected?: boolean;
   tabIndex?: number;
-  onMoving?: (val: Vec2) => void;
+  onMoving?: (coord: Coord) => void;
   onSelect?: () => void;
 };
 
 const Thumb = ({
-  val,
-  constraintX,
-  constraintY,
-  interactionSize,
-  displaySize,
+  coord: coord,
+  rangeX,
+  rangeY,
   isSelected,
   tabIndex,
   onMoving,
   onSelect,
 }: ThumbProps) => {
-  const { coordToPos, posToCoord, clampPos } = useGraph();
+  const {
+    coordToPos,
+    posToCoord,
+    clampPos,
+    thumbInteractionSize,
+    thumbDisplaySize,
+  } = useGraph();
 
   const constrainPos = useCallback(
     (pos: Vec2): Vec2 => {
       let [posX, posY] = clampPos(pos);
-      if (!constraintX && !constraintY) return [posX, posY];
-      if (constraintX) {
-        const [minPosX] = coordToPos([constraintX[0], 0]);
-        const [maxPosX] = coordToPos([constraintX[1], 0]);
+      if (!rangeX && !rangeY) return [posX, posY];
+      if (rangeX) {
+        const [minX, maxX] = rangeX;
+        const [minPosX] = coordToPos([minX, 0]);
+        const [maxPosX] = coordToPos([maxX, 0]);
         posX = clamp(posX, minPosX, maxPosX);
       }
-      if (constraintY) {
-        const [, minPosY] = coordToPos([0, constraintY[0]]);
-        const [, maxPosY] = coordToPos([0, constraintY[1]]);
+      if (rangeY) {
+        const [minY, maxY] = rangeY;
+        const [, minPosY] = coordToPos([0, minY]);
+        const [, maxPosY] = coordToPos([0, maxY]);
         posY = clamp(posY, minPosY, maxPosY);
       }
       return [posX, posY];
     },
-    [constraintX, constraintY, coordToPos, clampPos]
+    [rangeX, rangeY, coordToPos, clampPos]
   );
 
   const isMovingRef = useRef(false);
   const [internalPosState, setInternalPosState] = useState<Vec2>(
-    coordToPos(val)
+    coordToPos(coord)
   );
 
   useLayoutEffect(() => {
     if (isMovingRef.current) return;
-    setInternalPosState(coordToPos(val));
-  }, [val, coordToPos]);
+    setInternalPosState(coordToPos(coord));
+  }, [coord, coordToPos]);
 
   const { hoverProps, isHovered } = useHover({
     onHoverStart: () => {},
@@ -86,15 +90,15 @@ const Thumb = ({
       newPos[1] += e.deltaY;
       setInternalPosState(newPos);
       const constrainedPos = constrainPos(newPos);
-      const newVal = posToCoord(constrainedPos);
-      onMoving?.(newVal);
+      const newCoord = posToCoord(constrainedPos);
+      onMoving?.(newCoord);
     },
     onMoveEnd() {
       isMovingRef.current = false;
       const newPos = constrainPos(internalPosState);
       setInternalPosState(newPos);
-      const newVal = posToCoord(newPos);
-      onMoving?.(newVal);
+      const newCoord = posToCoord(newPos);
+      onMoving?.(newCoord);
     },
   });
 
@@ -103,10 +107,8 @@ const Thumb = ({
   const [usedPosX, usedPosY] = onMoving
     ? isMovingRef.current
       ? constrainPos(internalPosState)
-      : coordToPos(val)
+      : coordToPos(coord)
     : constrainPos(internalPosState);
-  const usedInteractionSize = interactionSize || THUMB_INTERACTION_SIZE;
-  const usedDisplaySize = displaySize || THUMB_DISPLAY_SIZE;
   const usedIsHovered = isHovered || isMovingRef.current;
   const usedIsPressed = isPressed || isMovingRef.current;
 
@@ -124,14 +126,14 @@ const Thumb = ({
       data-hovered={usedIsHovered}
       data-pressed={usedIsPressed}
       data-selected={isSelected}
-      data-display-size={usedDisplaySize}
-      data-interaction-size={usedInteractionSize}
+      data-display-size={thumbDisplaySize}
+      data-interaction-size={thumbInteractionSize}
     >
       <circle
         className={clsx(classes.display)}
         cx={usedPosX}
         cy={usedPosY}
-        r={0.5 * usedDisplaySize}
+        r={0.5 * thumbDisplaySize}
         fill="#fff"
         stroke="transparent"
         strokeWidth="0"
@@ -142,7 +144,7 @@ const Thumb = ({
         // tabIndex={tabIndex}
         cx={usedPosX}
         cy={usedPosY}
-        r={0.5 * usedInteractionSize}
+        r={0.5 * thumbInteractionSize}
         fill="transparent"
         stroke="none"
         cursor="pointer"

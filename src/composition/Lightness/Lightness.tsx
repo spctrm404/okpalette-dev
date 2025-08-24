@@ -1,15 +1,15 @@
 import { GradientGl } from '@/components/GradientGl';
 import { Graph } from '@/components/Graph';
-import { Paths } from '@/models/Paths';
-import { useRef, useState } from 'react';
+import { FnPaths } from '@/models/FnPaths';
+import { useRef } from 'react';
 
 type LightnessProps = {
   pathsArray: number[][];
 };
 
 const Lightness = ({ pathsArray }: LightnessProps) => {
-  const pathsRef = useRef<Paths>(Paths.fromArray(pathsArray));
-  const [x, setX] = useState<number | null>(null);
+  const pathsRef = useRef<FnPaths>(FnPaths.fromArray(pathsArray));
+  console.log(pathsRef.current);
 
   return (
     <div>

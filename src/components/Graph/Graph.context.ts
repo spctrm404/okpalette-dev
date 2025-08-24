@@ -1,13 +1,17 @@
-import type { Vec2 } from '@/types';
+import type { Coord } from '@/models/FnPaths';
 import { createContext, useContext } from 'react';
 
 export type GraphContextValue = {
-  coordToPos: (coord: Vec2) => Vec2;
-  posToCoord: (pos: Vec2) => Vec2;
-  clampPos: (pos: Vec2) => Vec2;
+  coordToPos: (coord: Coord) => Coord;
+  posToCoord: (pos: Coord) => Coord;
+  clampPos: (pos: Coord) => Coord;
+  thumbInteractionSize: number;
+  thumbDisplaySize: number;
 };
 
-export const GraphContext = createContext<GraphContextValue | null>(null);
+export const GraphContext = createContext<GraphContextValue | undefined>(
+  undefined
+);
 
 export function useGraph() {
   const context = useContext(GraphContext);

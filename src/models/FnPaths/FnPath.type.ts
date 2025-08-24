@@ -1,10 +1,11 @@
+import type { Vec2 } from '@/types';
 import type { LinearPoint } from './LinearPoint';
 import type { BezierPoint } from './BezierPoint';
 import type { ExponentialPoint } from './ExponentialPoint';
 import type { ControlPoint } from './ControlPoint';
 
-export type Coord = [number, number];
-export type Range = [number, number];
+export type Coord = Vec2;
+export type Range = Vec2;
 
 export interface PointObsProps {
   coord: Coord;
@@ -45,8 +46,3 @@ export type AnyPtObsProps = AnyFnPtObsProps | ControlPtObsProps;
 
 export type AnyFnPtInstance = LinearPoint | BezierPoint | ExponentialPoint;
 export type AnyPtInstance = AnyFnPtInstance | ControlPoint;
-
-// export type AnyPoint =
-//   | LinearPtObsProps
-//   | BezierPtObsProps
-//   | ExponentialPtObsProps;

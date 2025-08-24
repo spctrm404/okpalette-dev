@@ -1,36 +1,39 @@
 import { useMemo } from 'react';
-import type { PointInstance } from '@/models/Paths';
-import { BezierPoint } from '@/models/Paths';
-import { ExponentPoint } from '@/models/Paths';
-import { usePoint } from '@/hooks/Paths';
+import {
+  type AnyFnPtInstance,
+  type AnyFnPtObsProps,
+  type ControlPtObsProps,
+  BezierPoint,
+} from '@/models/FnPaths';
+import { usePoint } from '@/hooks/FnPaths';
 import { map } from '@/utils';
 import { useGraph } from './Graph.context';
 
 type LinkProps = {
-  beginPoint: PointInstance;
-  endPoint: PointInstance;
+  beginPt: AnyFnPtInstance;
+  endPt: AnyFnPtInstance;
   idx: number;
 };
 
-const Link = ({ beginPoint, endPoint, idx }: LinkProps) => {
+const Link = ({ beginPt, endPt, idx }: LinkProps) => {
   console.log(`render: link${idx}`);
 
-  const cp1 = beginPoint instanceof BezierPoint ? beginPoint.nextCp : null;
-  const cp2 = endPoint instanceof BezierPoint ? endPoint.prevCp : null;
+  const cp1 = beginPt instanceof BezierPoint ? beginPt.nextCp : undefined;
+  const cp2 = endPt instanceof BezierPoint ? endPt.prevCp : undefined;
 
-  const trgBeginPt = usePoint(beginPoint);
-  const trgCp1 = usePoint(cp1);
-  const trgCp2 = usePoint(cp2);
-  const trgEndPt = usePoint(endPoint);
+  const beginPtProps = usePoint(beginPt)! as AnyFnPtObsProps;
+  const cp1Props = usePoint(cp1) as ControlPtObsProps | undefined;
+  const cp2Props = usePoint(cp2) as ControlPtObsProps | undefined;
+  const endPtProps = usePoint(endPt)! as AnyFnPtObsProps;
 
   const { coordToPos } = useGraph();
 
   const d = useMemo(() => {
-    const beginPos = coordToPos(beginPoint.coord);
-    const endPos = coordToPos(endPoint.coord);
+    const beginPos = coordToPos(beginPtProps.coord);
+    const endPos = coordToPos(endPtProps.coord);
     let dStr = `M${beginPos[0]},${beginPos[1]}`;
-    if (beginPoint instanceof ExponentPoint) {
-      const exponent = beginPoint.exponent;
+    if ('exponent' in beginPtProps) {
+      const exponent = beginPtProps.exponent;
       const resolution = 64;
       for (let n = 1; n <= resolution + 1; ++n) {
         const normalizedX = n / (resolution + 1);
@@ -39,15 +42,19 @@ const Link = ({ beginPoint, endPoint, idx }: LinkProps) => {
         const posY = map(powedY, 0, 1, beginPos[1], endPos[1]);
         dStr += ` L${posX},${posY}`;
       }
-    } else if (cp1?.isUsable || cp2?.isUsable) {
-      const [cp1PosX, cp1PosY] = cp1 ? coordToPos(cp1.absCoord) : beginPos;
-      const [cp2PosX, cp2PosY] = cp2 ? coordToPos(cp2.absCoord) : endPos;
+    } else if (cp1Props?.isUsable() || cp2Props?.isUsable()) {
+      const [cp1PosX, cp1PosY] = cp1Props
+        ? coordToPos(cp1Props.getAbsCoord())
+        : beginPos;
+      const [cp2PosX, cp2PosY] = cp2Props
+        ? coordToPos(cp2Props.getAbsCoord())
+        : endPos;
       dStr += ` C${cp1PosX},${cp1PosY} ${cp2PosX},${cp2PosY} ${endPos[0]},${endPos[1]}`;
     } else {
       dStr += ` L${endPos[0]},${endPos[1]}`;
     }
     return dStr;
-  }, [coordToPos, trgBeginPt, trgCp1, trgCp2, trgEndPt]);
+  }, [coordToPos, beginPtProps, cp1Props, cp2Props, endPtProps]);
 
   return <path d={d} fill="none" stroke="black" strokeWidth={2} />;
 };

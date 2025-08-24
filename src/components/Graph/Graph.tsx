@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Mat2, Vec2 } from '@/types';
-import { Paths } from '@/models/Paths';
+import { type Coord, FnPaths } from '@/models/FnPaths';
 import { clamp, map } from '@/utils';
 import { THUMB_INTERACTION_SIZE, THUMB_DISPLAY_SIZE } from './Graph.constants';
 import { GraphProvider } from './Graph.provider';
@@ -8,7 +8,7 @@ import Link from './Graph.Link';
 import Node from './Graph.Node';
 
 type GraphProps = {
-  paths: Paths;
+  paths: FnPaths;
   bound?: Mat2;
   thumbInteractionSize?: number;
   thumbDisplaySize?: number;
@@ -20,8 +20,6 @@ const Graph = ({
   thumbInteractionSize,
   thumbDisplaySize,
 }: GraphProps) => {
-  const usedPath = paths;
-
   const elemRef = useRef<SVGSVGElement>(null);
   const elemSizeStates = useState<Vec2>([0, 0]);
   const [elemSizeState, setElemSizeState] = elemSizeStates;
@@ -63,13 +61,13 @@ const Graph = ({
   const paddedHeight = elemSizeState[1] - 2 * padding;
 
   const getBoundFromPath = (): Mat2 => {
-    if (paths.length < 2)
+    if (paths.pointCnt < 2)
       return [
         [0, 0],
         [1, 1],
       ];
     const firstX = paths.getPoint(0)!.coord[0];
-    const lastX = paths.getPoint(paths.length - 1)!.coord[0];
+    const lastX = paths.getPoint(paths.pointCnt - 1)!.coord[0];
     const yVals = paths.points.map((aPoint) => aPoint.coord[1]);
     const minY = Math.min(...yVals);
     const maxY = Math.max(...yVals);
@@ -82,32 +80,32 @@ const Graph = ({
   const usedBound = bound || boundFromPathRef.current;
   const [minBound, maxBound] = usedBound;
   const coordToPos = useCallback(
-    (coord: Vec2): Vec2 => {
+    (coord: Coord): Coord => {
       return map(
         coord,
         minBound,
         maxBound,
         [minPosX, minPosY],
         [maxPosX, maxPosY]
-      ) as Vec2;
+      ) as Coord;
     },
     [minBound, maxBound, minPosX, minPosY, maxPosX, maxPosY]
   );
   const posToCoord = useCallback(
-    (pos: Vec2): Vec2 => {
+    (pos: Coord): Coord => {
       return map(
         pos,
         [minPosX, minPosY],
         [maxPosX, maxPosY],
         minBound,
         maxBound
-      ) as Vec2;
+      ) as Coord;
     },
     [minBound, maxBound, minPosX, minPosY, maxPosX, maxPosY]
   );
   const clampPos = useCallback(
-    (pos: Vec2): Vec2 =>
-      clamp(pos, [minPosX, minPosY], [maxPosX, maxPosY]) as Vec2,
+    (pos: Coord): Coord =>
+      clamp(pos, [minPosX, minPosY], [maxPosX, maxPosY]) as Coord,
     [minPosX, minPosY, maxPosX, maxPosY]
   );
 
@@ -129,6 +127,8 @@ const Graph = ({
         coordToPos={coordToPos}
         posToCoord={posToCoord}
         clampPos={clampPos}
+        thumbInteractionSize={usedThumbInteractionSize}
+        thumbDisplaySize={usedThumbDisplaySize}
       >
         <rect
           x={padding}
@@ -137,28 +137,20 @@ const Graph = ({
           height={Math.max(paddedHeight, 0)}
           fill="grey"
         />
-        {usedPath.points.map((aPoint, idx) => {
+        {paths.points.map((aPoint, idx) => {
           if (idx === 0) return null;
           return (
             <Link
-              key={`graph-link-${aPoint.uuid}`}
-              beginPoint={usedPath.getPoint(idx - 1)!}
-              endPoint={aPoint}
+              key={`graph-link-${aPoint.id}`}
+              beginPt={paths.getPoint(idx - 1)!}
+              endPt={aPoint}
               idx={idx}
             />
           );
         })}
-        {usedPath.points.map((aPoint, idx) => {
+        {paths.points.map((aPoint, idx) => {
           return (
-            <Node
-              key={`graph-point-${aPoint.uuid}`}
-              point={aPoint}
-              {...(idx > 0 && { prevPt: usedPath.getPoint(idx - 1)! })}
-              {...(idx < usedPath.points.length - 1 && {
-                nextPt: usedPath.getPoint(idx + 1)!,
-              })}
-              idx={idx}
-            />
+            <Node key={`graph-point-${aPoint.id}`} point={aPoint} idx={idx} />
           );
         })}
       </GraphProvider>

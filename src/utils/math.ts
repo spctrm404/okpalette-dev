@@ -29,7 +29,11 @@ export function clamp(
   ) {
     return map(val, boundA, boundB);
   }
-  throw new Error('clamp: invalid arguments');
+  throw new Error(
+    `clamp: invalid arguments\nval: ${JSON.stringify(
+      val
+    )}\nboundA: ${JSON.stringify(boundA)}\nboundB: ${JSON.stringify(boundB)}`
+  );
 }
 
 export function map(
