@@ -27,6 +27,13 @@ export class FnPaths {
     return this.#points[idx];
   }
 
+  getPath(idx: number): [AnyFnPtInstance, AnyFnPtInstance] | undefined {
+    const startPt = this.getPoint(idx);
+    const endPt = this.getPoint(idx + 1);
+    if (!startPt || !endPt) return undefined;
+    return [startPt, endPt];
+  }
+
   getPointIdx(point: AnyFnPtInstance): number {
     return this.#points.indexOf(point);
   }
@@ -96,7 +103,7 @@ export class FnPaths {
     }
   }
 
-  findPathIdxForX(x: number): number | undefined {
+  private findPathIdxForX(x: number): number | undefined {
     for (let pathIdx = 0; pathIdx < this.pathCnt; pathIdx++) {
       const startPt = this.getPoint(pathIdx)!;
       const endPt = this.getPoint(pathIdx + 1)!;
@@ -108,10 +115,11 @@ export class FnPaths {
     const pathIdx = this.findPathIdxForX(x);
     if (pathIdx === undefined) return undefined;
 
-    const beginPt = this.getPoint(pathIdx)!;
-    const endPt = this.getPoint(pathIdx + 1)!;
-    const [beginX, beginY] = beginPt.coord;
-    const [endX, endY] = endPt.coord;
+    const [beginPt, endPt] = this.getPath(pathIdx)!;
+    const beginCoord = beginPt.coord;
+    const endCoord = endPt.coord;
+    const [beginX, beginY] = beginCoord;
+    const [endX, endY] = endCoord;
     if (x === beginX) return beginY;
     if (x === endX) return endY;
 
@@ -124,15 +132,9 @@ export class FnPaths {
     if (beginPt instanceof BezierPoint || endPt instanceof BezierPoint) {
       const cp1 = beginPt instanceof BezierPoint ? beginPt.nextCp : undefined;
       const cp2 = endPt instanceof BezierPoint ? endPt.prevCp : undefined;
-      const cp1Coord = cp1 ? cp1.getAbsCoord() : beginPt.coord;
-      const cp2Coord = cp2 ? cp2.getAbsCoord() : endPt.coord;
-      const y = getYOnCubicBezier(
-        x,
-        beginPt.coord,
-        cp1Coord,
-        cp2Coord,
-        endPt.coord
-      );
+      const cp1Coord = cp1 ? cp1.getAbsCoord() : beginCoord;
+      const cp2Coord = cp2 ? cp2.getAbsCoord() : endCoord;
+      const y = getYOnCubicBezier(x, beginCoord, cp1Coord, cp2Coord, endCoord);
       return y;
     }
     const y = map(x, beginX, endX, beginY, endY);

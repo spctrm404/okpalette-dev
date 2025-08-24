@@ -14,21 +14,21 @@ export class Point<T extends PointObsProps = PointObsProps>
   }
 
   get coord(): Coord {
-    return this.observable.coord;
+    return this.props.coord;
   }
   set coord(coord: Coord) {
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       coord,
     };
   }
 
   get id(): string {
-    return this.observable.id;
+    return this.props.id;
   }
   set id(id: string) {
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       id,
     };
   }

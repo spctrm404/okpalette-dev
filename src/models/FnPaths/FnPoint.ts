@@ -15,8 +15,8 @@ export class FnPoint<T extends FnPtObsProps = FnPtObsProps>
   constructor(coord: Coord) {
     super(coord);
     this.#initialCoord = coord;
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       prevPt: undefined,
       nextPt: undefined,
       getRangeX: (): Range => this.getRangeX(),
@@ -24,21 +24,21 @@ export class FnPoint<T extends FnPtObsProps = FnPtObsProps>
   }
 
   get prevPt(): AnyFnPtInstance | undefined {
-    return this.observable.prevPt;
+    return this.props.prevPt;
   }
   get nextPt(): AnyFnPtInstance | undefined {
-    return this.observable.nextPt;
+    return this.props.nextPt;
   }
 
   set prevPt(prevPt: AnyFnPtInstance | undefined) {
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       prevPt,
     };
   }
   set nextPt(nextPt: AnyFnPtInstance | undefined) {
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       nextPt,
     };
   }

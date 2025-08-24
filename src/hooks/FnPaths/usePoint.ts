@@ -6,7 +6,7 @@ export function usePoint(point: AnyPtInstance | undefined) {
   const unsubscribeRef = useRef<() => void | undefined>(undefined);
   const [pointObservableState, setPointObservableState] = useState<
     AnyPtObsProps | undefined
-  >(point?.observable);
+  >(point?.props);
 
   useEffect(() => {
     if (!point) return;
@@ -15,7 +15,7 @@ export function usePoint(point: AnyPtInstance | undefined) {
       pointRef.current = point;
     }
     const observer = {
-      update: () => setPointObservableState(point.observable),
+      update: () => setPointObservableState(point.props),
     };
     unsubscribeRef.current = point.subscribe(observer);
     return () => {

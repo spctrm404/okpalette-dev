@@ -14,8 +14,8 @@ export class ControlPoint
     super([0, 0]);
     this.#initialAbsCoord = initialAbsCoord;
     this.#isInitialized = false;
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       parentPt,
       neighborPt: undefined,
       twinPt: undefined,
@@ -27,25 +27,25 @@ export class ControlPoint
   }
 
   get parentPt(): BezierPoint {
-    return this.observable.parentPt;
+    return this.props.parentPt;
   }
 
   get neighborPt(): AnyFnPtInstance | undefined {
-    return this.observable.neighborPt;
+    return this.props.neighborPt;
   }
   set neighborPt(neighborPt: AnyFnPtInstance | undefined) {
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       neighborPt,
     };
   }
 
   get twinPt(): ControlPoint {
-    return this.observable.twinPt!;
+    return this.props.twinPt!;
   }
   set twinPt(twinPt: ControlPoint) {
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       twinPt,
     };
   }

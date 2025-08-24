@@ -8,8 +8,8 @@ export class BezierPoint
 {
   constructor(coord: Coord, prevCp?: Coord, nextCp?: Coord) {
     super(coord);
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       prevCp: new ControlPoint(this, prevCp || coord),
       nextCp: new ControlPoint(this, nextCp || coord),
     };
@@ -34,9 +34,9 @@ export class BezierPoint
   }
 
   get prevCp(): ControlPoint {
-    return this.observable.prevCp;
+    return this.props.prevCp;
   }
   get nextCp(): ControlPoint {
-    return this.observable.nextCp;
+    return this.props.nextCp;
   }
 }

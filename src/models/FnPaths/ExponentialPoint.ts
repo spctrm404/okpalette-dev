@@ -7,18 +7,18 @@ export class ExponentialPoint
 {
   constructor(coord: Coord, exponent: number) {
     super(coord);
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       exponent,
     };
   }
 
   get exponent(): number {
-    return this.observable.exponent;
+    return this.props.exponent;
   }
   set exponent(exponent: number) {
-    this.observable = {
-      ...this.observable,
+    this.props = {
+      ...this.props,
       exponent,
     };
   }

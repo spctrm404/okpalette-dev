@@ -11,11 +11,11 @@ export interface Subject {
 
 export class Observable<T> implements Subject {
   #observers: Observer[];
-  #observable: T;
+  #props: T;
 
-  constructor(observable: T) {
+  constructor(props: T) {
     this.#observers = [];
-    this.#observable = observable;
+    this.#props = props;
   }
 
   get observers() {
@@ -37,11 +37,11 @@ export class Observable<T> implements Subject {
     this.#observers.forEach((observer) => observer.update());
   }
 
-  get observable(): T {
-    return this.#observable;
+  get props(): T {
+    return this.#props;
   }
-  set observable(observable: T) {
-    this.#observable = observable;
+  set props(props: T) {
+    this.#props = props;
     this.notify();
   }
 }
