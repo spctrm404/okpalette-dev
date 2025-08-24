@@ -19,11 +19,7 @@ export class FnPoint<T extends FnPtObsProps = FnPtObsProps>
       ...this.observable,
       prevPt: undefined,
       nextPt: undefined,
-      getRangeX: (): Range => {
-        if (!this.prevPt || !this.nextPt)
-          return [this.#initialCoord[0], this.#initialCoord[0]];
-        return [this.prevPt.coord[0], this.nextPt.coord[0]];
-      },
+      getRangeX: (): Range => this.getRangeX(),
     };
   }
 
@@ -48,6 +44,8 @@ export class FnPoint<T extends FnPtObsProps = FnPtObsProps>
   }
 
   getRangeX(): Range {
-    return this.observable.getRangeX();
+    if (!this.prevPt || !this.nextPt)
+      return [this.#initialCoord[0], this.#initialCoord[0]];
+    return [this.prevPt.coord[0], this.nextPt.coord[0]];
   }
 }

@@ -19,26 +19,10 @@ export class ControlPoint
       parentPt,
       neighborPt: undefined,
       twinPt: undefined,
-      isInitialized: (): boolean => {
-        return this.#isInitialized;
-      },
-      isUsable: (): boolean => {
-        return this.neighborPt !== undefined && this.isInitialized();
-      },
-      isActive: (): boolean => {
-        const [x, y] = this.coord;
-        return x !== 0 || y !== 0;
-      },
-      getAbsCoord: (): Coord => {
-        if (!this.neighborPt) return this.#initialAbsCoord;
-        return map(
-          this.coord,
-          [0, 0],
-          [1, 1],
-          this.parentPt.coord,
-          this.neighborPt.coord
-        ) as Coord;
-      },
+      isInitialized: (): boolean => this.isInitialized(),
+      isUsable: (): boolean => this.isUsable(),
+      isActive: (): boolean => this.isActive(),
+      getAbsCoord: (): Coord => this.getAbsCoord(),
     };
   }
 
@@ -67,10 +51,10 @@ export class ControlPoint
   }
 
   isInitialized(): boolean {
-    return this.observable.isInitialized();
+    return this.#isInitialized;
   }
   isUsable(): boolean {
-    return this.observable.isUsable();
+    return this.neighborPt !== undefined && this.isInitialized();
   }
   isActive(): boolean {
     const [x, y] = this.coord;
@@ -78,7 +62,14 @@ export class ControlPoint
   }
 
   getAbsCoord(): Coord {
-    return this.observable.getAbsCoord();
+    if (!this.neighborPt) return this.#initialAbsCoord;
+    return map(
+      this.coord,
+      [0, 0],
+      [1, 1],
+      this.parentPt.coord,
+      this.neighborPt.coord
+    ) as Coord;
   }
   setAbsCoord(absCoord: Coord) {
     if (!this.neighborPt) return;
