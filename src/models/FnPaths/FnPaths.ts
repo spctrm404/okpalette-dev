@@ -3,11 +3,17 @@ import { LinearPoint } from './LinearPoint';
 import { BezierPoint } from './BezierPoint';
 import { ExponentialPoint } from './ExponentialPoint';
 import { getYOnCubicBezier, map } from '@/utils';
+import { Observable } from '@/models/Observable';
 
-export class FnPaths {
+export interface FnPathsProps {
+  getFnVal: (x: number) => number | undefined;
+}
+
+export class FnPaths extends Observable<FnPathsProps> {
   #points: AnyFnPtInstance[];
 
   constructor() {
+    super({ getFnVal: (x) => this.getFnVal(x) });
     this.#points = [];
   }
 
@@ -40,9 +46,19 @@ export class FnPaths {
 
   addPoint(point: AnyFnPtInstance, idx?: number): void {
     if (idx === undefined) {
+      point.subscribe({
+        update: () => {
+          this.notify();
+        },
+      });
       this.#points.push(point);
       this.updateLinks(this.pointCnt - 1);
     } else if (idx >= 0 && idx <= this.pointCnt) {
+      point.subscribe({
+        update: () => {
+          this.notify();
+        },
+      });
       this.#points.splice(idx, 0, point);
       this.updateLinks(idx);
     }
@@ -72,6 +88,11 @@ export class FnPaths {
     if (targetPtIdx < 0) return;
     const { id: oldId } = targetPt;
     newPt.id = oldId;
+    newPt.subscribe({
+      update: () => {
+        this.notify();
+      },
+    });
     targetPt.unsubscribeAll();
     this.#points[targetPtIdx] = newPt;
     this.updateLinks(targetPtIdx);

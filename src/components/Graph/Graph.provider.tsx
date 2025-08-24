@@ -1,12 +1,14 @@
+import { useMemo } from 'react';
+import type { Mat2 } from '@/types';
 import type { Coord } from '@/models/FnPaths';
 import { type GraphContextValue, GraphContext } from './Graph.context';
-import { useMemo } from 'react';
 
 type GraphProviderProps = {
   children: React.ReactNode;
   coordToPos: (coord: Coord) => Coord;
   posToCoord: (pos: Coord) => Coord;
   clampPos: (pos: Coord) => Coord;
+  posBound: Mat2;
   thumbInteractionSize: number;
   thumbDisplaySize: number;
 };
@@ -16,6 +18,7 @@ export function GraphProvider({
   coordToPos,
   posToCoord,
   clampPos,
+  posBound,
   thumbInteractionSize,
   thumbDisplaySize,
 }: GraphProviderProps) {
@@ -24,10 +27,18 @@ export function GraphProvider({
       coordToPos,
       posToCoord,
       clampPos,
+      posBound,
       thumbInteractionSize,
       thumbDisplaySize,
     }),
-    [coordToPos, posToCoord, clampPos, thumbInteractionSize, thumbDisplaySize]
+    [
+      coordToPos,
+      posToCoord,
+      clampPos,
+      posBound,
+      thumbInteractionSize,
+      thumbDisplaySize,
+    ]
   );
 
   return (

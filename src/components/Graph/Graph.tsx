@@ -4,6 +4,7 @@ import { type Coord, FnPaths } from '@/models/FnPaths';
 import { clamp, map } from '@/utils';
 import { THUMB_INTERACTION_SIZE, THUMB_DISPLAY_SIZE } from './Graph.constants';
 import { GraphProvider } from './Graph.provider';
+import Fn from './Graph.Fn';
 import Link from './Graph.Link';
 import Node from './Graph.Node';
 
@@ -127,6 +128,10 @@ const Graph = ({
         coordToPos={coordToPos}
         posToCoord={posToCoord}
         clampPos={clampPos}
+        posBound={[
+          [minPosX, minPosY],
+          [maxPosX, maxPosY],
+        ]}
         thumbInteractionSize={usedThumbInteractionSize}
         thumbDisplaySize={usedThumbDisplaySize}
       >
@@ -137,6 +142,7 @@ const Graph = ({
           height={Math.max(paddedHeight, 0)}
           fill="grey"
         />
+        <Fn paths={paths} x={30} />
         {paths.points.map((aPoint, idx) => {
           if (idx === 0) return null;
           return (

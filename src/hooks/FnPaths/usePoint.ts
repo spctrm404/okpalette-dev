@@ -15,7 +15,9 @@ export function usePoint(point: AnyPtInstance | undefined) {
       pointRef.current = point;
     }
     const observer = {
-      update: () => setPointObservableState(point.props),
+      update: (props: AnyPtObsProps) => {
+        setPointObservableState(props);
+      },
     };
     unsubscribeRef.current = point.subscribe(observer);
     return () => {
