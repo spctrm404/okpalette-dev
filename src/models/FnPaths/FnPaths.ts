@@ -2,22 +2,25 @@ import type { AnyFnPtInstance } from './FnPath.type';
 import { LinearPoint } from './LinearPoint';
 import { BezierPoint } from './BezierPoint';
 import { ExponentialPoint } from './ExponentialPoint';
-
-export type Points = AnyFnPtInstance[];
+import { getYOnCubicBezier, map } from '@/utils';
 
 export class FnPaths {
-  #points: Points;
+  #points: AnyFnPtInstance[];
 
   constructor() {
     this.#points = [];
   }
 
-  get points(): Points {
+  get points(): AnyFnPtInstance[] {
     return this.#points;
   }
 
   get pointCnt(): number {
     return this.#points.length;
+  }
+
+  get pathCnt(): number {
+    return this.#points.length - 1;
   }
 
   getPoint(idx: number): AnyFnPtInstance | undefined {
@@ -91,6 +94,49 @@ export class FnPaths {
       if (rightPt instanceof BezierPoint && !rightPt.prevCp.isInitialized())
         rightPt.prevCp.initializeCoordFromAbsCoord();
     }
+  }
+
+  findPathIdxForX(x: number): number | undefined {
+    for (let pathIdx = 0; pathIdx < this.pathCnt; pathIdx++) {
+      const startPt = this.getPoint(pathIdx)!;
+      const endPt = this.getPoint(pathIdx + 1)!;
+      if (x >= startPt.coord[0] && x <= endPt.coord[0]) return pathIdx;
+    }
+  }
+
+  getFnVal(x: number): number | undefined {
+    const pathIdx = this.findPathIdxForX(x);
+    if (pathIdx === undefined) return undefined;
+
+    const beginPt = this.getPoint(pathIdx)!;
+    const endPt = this.getPoint(pathIdx + 1)!;
+    const [beginX, beginY] = beginPt.coord;
+    const [endX, endY] = endPt.coord;
+    if (x === beginX) return beginY;
+    if (x === endX) return endY;
+
+    if (beginPt instanceof ExponentialPoint) {
+      const normalizedX = map(x, beginX, endX, 0, 1);
+      const normalizedY = Math.pow(normalizedX, beginPt.exponent);
+      const y = map(normalizedY, 0, 1, beginY, endY);
+      return y;
+    }
+    if (beginPt instanceof BezierPoint || endPt instanceof BezierPoint) {
+      const cp1 = beginPt instanceof BezierPoint ? beginPt.nextCp : undefined;
+      const cp2 = endPt instanceof BezierPoint ? endPt.prevCp : undefined;
+      const cp1Coord = cp1 ? cp1.getAbsCoord() : beginPt.coord;
+      const cp2Coord = cp2 ? cp2.getAbsCoord() : endPt.coord;
+      const y = getYOnCubicBezier(
+        x,
+        beginPt.coord,
+        cp1Coord,
+        cp2Coord,
+        endPt.coord
+      );
+      return y;
+    }
+    const y = map(x, beginX, endX, beginY, endY);
+    return y;
   }
 
   static fromArray(pathsArray: number[][]): FnPaths {
