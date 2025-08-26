@@ -41,7 +41,7 @@ export class FnPaths extends Observable<FnPathsObsProps> {
   getPath(idx: number): Path | undefined {
     const startPt = this.getPoint(idx);
     const endPt = this.getPoint(idx + 1);
-    if (!startPt || !endPt) return undefined;
+    if (!startPt || !endPt) return;
     return [startPt, endPt];
   }
 

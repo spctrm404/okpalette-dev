@@ -6,18 +6,18 @@ import { THUMB_INTERACTION_SIZE, THUMB_DISPLAY_SIZE } from './Graph.constants';
 import { GraphProvider } from './Graph.provider';
 import Link from './Graph.Link';
 import Node from './Graph.Node';
-import Fn from './Graph.Fn';
+import FnIntersection from './Graph.FnIntersection';
 
 type GraphProps = {
   paths: FnPaths;
-  bound?: Mat2;
+  boundary?: Mat2;
   thumbInteractionSize?: number;
   thumbDisplaySize?: number;
 };
 
 const Graph = ({
   paths,
-  bound,
+  boundary,
   thumbInteractionSize,
   thumbDisplaySize,
 }: GraphProps) => {
@@ -52,6 +52,7 @@ const Graph = ({
   const usedThumbInteractionSize =
     thumbInteractionSize || THUMB_INTERACTION_SIZE;
   const usedThumbDisplaySize = thumbDisplaySize || THUMB_DISPLAY_SIZE;
+
   const padding = 0.5 * usedThumbInteractionSize;
   const minPosX = padding;
   const minPosY = elemSizeState[1] - padding;
@@ -60,7 +61,7 @@ const Graph = ({
   const paddedWidth = elemSizeState[0] - 2 * padding;
   const paddedHeight = elemSizeState[1] - 2 * padding;
 
-  const getBoundFromPath = (): Mat2 => {
+  const getBoundaryFromPath = (): Mat2 => {
     if (paths.pointCnt < 2)
       return [
         [0, 0],
@@ -76,14 +77,15 @@ const Graph = ({
       [lastX, maxY],
     ];
   };
-  const boundFromPath = useRef<Mat2>(getBoundFromPath()).current;
-  const usedBound = bound
+  const boundaryFromPath = useRef<Mat2>(getBoundaryFromPath()).current;
+  const usedBoundary = boundary
     ? [
-        [boundFromPath[0][0], bound[0][1]],
-        [boundFromPath[1][0], bound[1][1]],
+        [boundaryFromPath[0][0], boundary[0][1]],
+        [boundaryFromPath[1][0], boundary[1][1]],
       ]
-    : boundFromPath;
-  const [minBound, maxBound] = usedBound;
+    : boundaryFromPath;
+  const [minBound, maxBound] = usedBoundary;
+
   const coordToPos = useCallback(
     (coord: Coord): Coord => {
       return map(
@@ -157,7 +159,8 @@ const Graph = ({
         coordToPos={coordToPos}
         posToCoord={posToCoord}
         clampPos={clampPos}
-        posBound={[
+        paddedSize={[paddedWidth, paddedHeight]}
+        posBoundary={[
           [minPosX, minPosY],
           [maxPosX, maxPosY],
         ]}
@@ -171,8 +174,8 @@ const Graph = ({
           height={Math.max(paddedHeight, 0)}
           fill="grey"
         />
+        <FnIntersection paths={paths} />
         {links}
-        <Fn paths={paths} />
         {nodes}
       </GraphProvider>
     </svg>

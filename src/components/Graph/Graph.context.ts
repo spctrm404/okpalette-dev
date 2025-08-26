@@ -1,12 +1,13 @@
 import { createContext, useContext } from 'react';
-import type { Mat2 } from '@/types/math';
+import type { Mat2, Vec2 } from '@/types/math';
 import type { Coord } from '@/models/FnPaths';
 
 export type GraphContextValue = {
   coordToPos: (coord: Coord) => Coord;
   posToCoord: (pos: Coord) => Coord;
   clampPos: (pos: Coord) => Coord;
-  posBound: Mat2;
+  paddedSize: Vec2;
+  posBoundary: Mat2;
   thumbInteractionSize: number;
   thumbDisplaySize: number;
 };

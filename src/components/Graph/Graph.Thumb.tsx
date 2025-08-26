@@ -1,6 +1,5 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { mergeProps, useHover, useMove, usePress } from 'react-aria';
-import type { Vec2 } from '@/types';
 import type { Coord, Range } from '@/models/FnPaths';
 import { useGraph } from './Graph.context';
 import classes from './_Thumb.module.scss';
@@ -35,7 +34,7 @@ const Thumb = ({
   } = useGraph();
 
   const constrainPos = useCallback(
-    (pos: Vec2): Vec2 => {
+    (pos: Coord): Coord => {
       let [posX, posY] = clampPos(pos);
       if (!rangeX && !rangeY) return [posX, posY];
       if (rangeX) {
@@ -56,7 +55,7 @@ const Thumb = ({
   );
 
   const isMovingRef = useRef(false);
-  const [internalPosState, setInternalPosState] = useState<Vec2>(
+  const [internalPosState, setInternalPosState] = useState<Coord>(
     coordToPos(coord)
   );
 

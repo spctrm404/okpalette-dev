@@ -34,69 +34,67 @@ const Node = ({ point, idx }: PointProps) => {
   const pos = coordToPos(ptProps.getCoord());
 
   const controlPt = useMemo(() => {
-    if (prevCpProps?.isActive() || nextCpProps?.isActive()) {
-      const [prevCpPosX, prevCpPosY] = prevCpProps?.isActive()
-        ? coordToPos(prevCpProps.getAbsCoord())
-        : pos;
-      const [nextCpPosX, nextCpPosY] = nextCpProps?.isActive()
-        ? coordToPos(nextCpProps.getAbsCoord())
-        : pos;
-      return (
-        <>
-          {prevCpProps?.isActive() && (
-            <path
-              d={`M${pos[0]},${pos[1]} L${prevCpPosX},${prevCpPosY}`}
-              stroke="blue"
-              strokeDasharray="4 2"
-            />
-          )}
-          {nextCpProps?.isActive() && (
-            <path
-              d={`M${pos[0]},${pos[1]} L${nextCpPosX},${nextCpPosY}`}
-              stroke="blue"
-              strokeDasharray="4 2"
-            />
-          )}
-          {prevCpProps?.isActive() && (
-            <Thumb
-              coord={prevCpProps.getAbsCoord()}
-              onMoving={(newVal) => {
-                if (prevCp) prevCp.absCoord = newVal;
-              }}
-              {...(prevPtProps && {
-                rangeX: [
-                  prevPtProps.getCoord()[0],
-                  ptProps.getCoord()[0],
-                ] as Range,
-                rangeY: [
-                  prevPtProps.getCoord()[1],
-                  ptProps.getCoord()[1],
-                ] as Range,
-              })}
-            />
-          )}
-          {nextCpProps?.isActive() && (
-            <Thumb
-              coord={nextCpProps.getAbsCoord()}
-              onMoving={(newVal) => {
-                if (nextCp) nextCp.absCoord = newVal;
-              }}
-              {...(nextPtProps && {
-                rangeX: [
-                  nextPtProps.getCoord()[0],
-                  ptProps.getCoord()[0],
-                ] as Range,
-                rangeY: [
-                  nextPtProps.getCoord()[1],
-                  ptProps.getCoord()[1],
-                ] as Range,
-              })}
-            />
-          )}
-        </>
-      );
-    }
-    return null;
+    if (!prevCpProps?.isActive() && !nextCpProps?.isActive()) return;
+    const [prevCpPosX, prevCpPosY] = prevCpProps?.isActive()
+      ? coordToPos(prevCpProps.getAbsCoord())
+      : pos;
+    const [nextCpPosX, nextCpPosY] = nextCpProps?.isActive()
+      ? coordToPos(nextCpProps.getAbsCoord())
+      : pos;
+    return (
+      <>
+        {prevCpProps?.isActive() && (
+          <path
+            d={`M${pos[0]},${pos[1]} L${prevCpPosX},${prevCpPosY}`}
+            stroke="blue"
+            strokeDasharray="4 2"
+          />
+        )}
+        {nextCpProps?.isActive() && (
+          <path
+            d={`M${pos[0]},${pos[1]} L${nextCpPosX},${nextCpPosY}`}
+            stroke="blue"
+            strokeDasharray="4 2"
+          />
+        )}
+        {prevCpProps?.isActive() && (
+          <Thumb
+            coord={prevCpProps.getAbsCoord()}
+            onMoving={(newVal) => {
+              if (prevCp) prevCp.absCoord = newVal;
+            }}
+            {...(prevPtProps && {
+              rangeX: [
+                prevPtProps.getCoord()[0],
+                ptProps.getCoord()[0],
+              ] as Range,
+              rangeY: [
+                prevPtProps.getCoord()[1],
+                ptProps.getCoord()[1],
+              ] as Range,
+            })}
+          />
+        )}
+        {nextCpProps?.isActive() && (
+          <Thumb
+            coord={nextCpProps.getAbsCoord()}
+            onMoving={(newVal) => {
+              if (nextCp) nextCp.absCoord = newVal;
+            }}
+            {...(nextPtProps && {
+              rangeX: [
+                nextPtProps.getCoord()[0],
+                ptProps.getCoord()[0],
+              ] as Range,
+              rangeY: [
+                nextPtProps.getCoord()[1],
+                ptProps.getCoord()[1],
+              ] as Range,
+            })}
+          />
+        )}
+      </>
+    );
   }, [
     coordToPos,
     nextCp,
