@@ -18,6 +18,8 @@ type LinkProps = {
 const Link = ({ beginPt, endPt, idx }: LinkProps) => {
   console.log(`render: link${idx}`);
 
+  const { coordToPos } = useGraph();
+
   const cp1 = beginPt instanceof BezierPoint ? beginPt.nextCp : undefined;
   const cp2 = endPt instanceof BezierPoint ? endPt.prevCp : undefined;
 
@@ -26,27 +28,25 @@ const Link = ({ beginPt, endPt, idx }: LinkProps) => {
   const cp2Props = usePoint(cp2) as ControlPtObsProps | undefined;
   const endPtProps = usePoint(endPt)! as AnyFnPtObsProps;
 
-  const { coordToPos } = useGraph();
-
   const d = useMemo(() => {
-    const beginPos = coordToPos(beginPtProps.coord);
-    const endPos = coordToPos(endPtProps.coord);
+    const beginPos = coordToPos(beginPtProps.getCoord());
+    const endPos = coordToPos(endPtProps.getCoord());
     let dStr = `M${beginPos[0]},${beginPos[1]}`;
-    if ('exponent' in beginPtProps) {
-      const exponent = beginPtProps.exponent;
+    if ('getExponent' in beginPtProps) {
+      const exponent = beginPtProps.getExponent();
       const resolution = 64;
       for (let n = 1; n <= resolution + 1; ++n) {
         const normalizedX = n / (resolution + 1);
-        const powedY = Math.pow(normalizedX, exponent);
+        const normalizedY = Math.pow(normalizedX, exponent);
         const posX = map(normalizedX, 0, 1, beginPos[0], endPos[0]);
-        const posY = map(powedY, 0, 1, beginPos[1], endPos[1]);
+        const posY = map(normalizedY, 0, 1, beginPos[1], endPos[1]);
         dStr += ` L${posX},${posY}`;
       }
     } else if (cp1Props?.isUsable() || cp2Props?.isUsable()) {
-      const [cp1PosX, cp1PosY] = cp1Props
+      const [cp1PosX, cp1PosY] = cp1Props?.isUsable()
         ? coordToPos(cp1Props.getAbsCoord())
         : beginPos;
-      const [cp2PosX, cp2PosY] = cp2Props
+      const [cp2PosX, cp2PosY] = cp2Props?.isUsable()
         ? coordToPos(cp2Props.getAbsCoord())
         : endPos;
       dStr += ` C${cp1PosX},${cp1PosY} ${cp2PosX},${cp2PosY} ${endPos[0]},${endPos[1]}`;
@@ -56,7 +56,7 @@ const Link = ({ beginPt, endPt, idx }: LinkProps) => {
     return dStr;
   }, [coordToPos, beginPtProps, cp1Props, cp2Props, endPtProps]);
 
-  return <path d={d} fill="none" stroke="black" strokeWidth={2} />;
+  return <path d={d} fill="none" stroke="red" strokeWidth={1} />;
 };
 
 export default Link;

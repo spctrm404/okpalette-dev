@@ -1,5 +1,5 @@
 export interface Observer<T> {
-  update: (props: T) => void;
+  (props: T): void;
 }
 
 export interface Subject<T> {
@@ -9,7 +9,7 @@ export interface Subject<T> {
   notify: () => void;
 }
 
-export class Observable<T> implements Subject<T> {
+export class Observable<T extends object> implements Subject<T> {
   #observers: Observer<T>[];
   #props: T;
 
@@ -34,14 +34,14 @@ export class Observable<T> implements Subject<T> {
     this.#observers = [];
   }
   notify() {
-    this.#observers.forEach((observer) => observer.update({ ...this.props }));
+    this.#observers.forEach((observer) => observer({ ...this.#props }));
   }
 
   get props(): T {
     return this.#props;
   }
-  set props(props: T) {
-    this.#props = props;
+  set props(properties: Partial<T>) {
+    Object.assign(this.#props, properties);
     this.notify();
   }
 }

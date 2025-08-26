@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import type { FnPaths, FnPathsProps } from '@/models/FnPaths';
+import type { FnPaths, FnPathsObsProps } from '@/models/FnPaths';
 
 export function usePaths(paths: FnPaths | undefined) {
   const pathsRef = useRef<FnPaths | undefined>(paths);
   const unsubscribeRef = useRef<() => void | undefined>(undefined);
-  const [pathsObservableState, setPathsObservableState] = useState<
-    FnPathsProps | undefined
-  >(paths?.props);
+  const [props, setProps] = useState<FnPathsObsProps | undefined>(paths?.props);
 
   useEffect(() => {
     if (!paths) return;
@@ -14,11 +12,8 @@ export function usePaths(paths: FnPaths | undefined) {
       unsubscribeRef.current?.();
       pathsRef.current = paths;
     }
-
-    const observer = {
-      update: (props: FnPathsProps) => {
-        setPathsObservableState(props);
-      },
+    const observer = (props: FnPathsObsProps) => {
+      setProps(props);
     };
     unsubscribeRef.current = paths.subscribe(observer);
     return () => {
@@ -26,5 +21,5 @@ export function usePaths(paths: FnPaths | undefined) {
     };
   }, [paths]);
 
-  return pathsObservableState;
+  return props;
 }

@@ -8,34 +8,34 @@ export type Coord = Vec2;
 export type Range = Vec2;
 
 export interface PointObsProps {
-  coord: Coord;
-  id: string;
+  getCoord: () => Coord;
+  getId: () => string;
 }
 export interface FnPtObsProps extends PointObsProps {
-  prevPt: AnyFnPtInstance | undefined;
-  nextPt: AnyFnPtInstance | undefined;
+  getPrevPt: () => AnyFnPtInstance | undefined;
+  getNextPt: () => AnyFnPtInstance | undefined;
   getRangeX: () => Range;
 }
 export interface LinearPtObsProps extends FnPtObsProps {
-  prevPt: AnyFnPtInstance | undefined;
-  nextPt: AnyFnPtInstance | undefined;
+  getPrevPt: () => AnyFnPtInstance | undefined;
+  getNextPt: () => AnyFnPtInstance | undefined;
   getRangeX: () => Range;
 }
 export interface ControlPtObsProps extends PointObsProps {
-  parentPt: BezierPoint;
-  neighborPt: AnyFnPtInstance | undefined;
-  twinPt: ControlPoint | undefined;
+  getParentPt: () => BezierPoint;
+  getNeighborPt: () => AnyFnPtInstance | undefined;
+  getTwinPt: () => ControlPoint;
   isInitialized: () => boolean;
   isUsable: () => boolean;
   isActive: () => boolean;
   getAbsCoord: () => Coord;
 }
 export interface BezierPtObsProps extends FnPtObsProps {
-  prevCp: ControlPoint;
-  nextCp: ControlPoint;
+  getPrevCp: () => ControlPoint;
+  getNextCp: () => ControlPoint;
 }
 export interface ExponentialPtObsProps extends FnPtObsProps {
-  exponent: number;
+  getExponent: () => number;
 }
 
 export type AnyFnPtObsProps =
@@ -46,3 +46,16 @@ export type AnyPtObsProps = AnyFnPtObsProps | ControlPtObsProps;
 
 export type AnyFnPtInstance = LinearPoint | BezierPoint | ExponentialPoint;
 export type AnyPtInstance = AnyFnPtInstance | ControlPoint;
+
+export type LinearPtArry = [number, number];
+export type BezierPtArry = [number, number, number, number, number, number];
+export type ExponentialPtArry = [number, number, number];
+export type PathsArry = (LinearPtArry | BezierPtArry | ExponentialPtArry)[];
+
+export type FnPoints = AnyFnPtInstance[];
+export type Path = [AnyFnPtInstance, AnyFnPtInstance];
+
+export interface FnPathsObsProps {
+  isInDomain: (x: number) => boolean;
+  evaluate: (x: number) => number | undefined;
+}

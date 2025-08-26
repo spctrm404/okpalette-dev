@@ -1,15 +1,15 @@
 import { GradientGl } from '@/components/GradientGl';
 import { Graph } from '@/components/Graph';
-import { FnPaths } from '@/models/FnPaths';
+import { FnPaths, type PathsArry } from '@/models/FnPaths';
 import { useRef } from 'react';
 
 type LightnessProps = {
-  pathsArray: number[][];
+  pathsArray: PathsArry;
 };
 
 const Lightness = ({ pathsArray }: LightnessProps) => {
-  const pathsRef = useRef<FnPaths>(FnPaths.fromArray(pathsArray));
-  console.log(pathsRef.current);
+  const paths = useRef<FnPaths>(FnPaths.fromArray(pathsArray)).current;
+  console.log(paths);
 
   return (
     <div>
@@ -34,7 +34,7 @@ const Lightness = ({ pathsArray }: LightnessProps) => {
           constVal: 0.0,
         }}
       />
-      <Graph paths={pathsRef.current} />
+      <Graph paths={paths} />
     </div>
   );
 };

@@ -6,44 +6,40 @@ import type {
 } from './FnPath.type';
 import { Point } from './Point';
 
-export class FnPoint<T extends FnPtObsProps = FnPtObsProps>
-  extends Point<T>
-  implements FnPtObsProps
-{
+export class FnPoint<T extends FnPtObsProps = FnPtObsProps> extends Point<T> {
   #initialCoord: Coord;
+  #prevPt: AnyFnPtInstance | undefined;
+  #nextPt: AnyFnPtInstance | undefined;
 
   constructor(coord: Coord) {
     super(coord);
     this.#initialCoord = coord;
+    this.#prevPt = undefined;
+    this.#nextPt = undefined;
     this.props = {
-      ...this.props,
-      prevPt: undefined,
-      nextPt: undefined,
-      getRangeX: (): Range => this.getRangeX(),
-    };
+      getPrevPt: () => this.prevPt,
+      getNextPt: () => this.nextPt,
+      getRangeX: () => this.rangeX,
+    } as Partial<T>;
   }
 
   get prevPt(): AnyFnPtInstance | undefined {
-    return this.props.prevPt;
+    return this.#prevPt;
   }
   get nextPt(): AnyFnPtInstance | undefined {
-    return this.props.nextPt;
+    return this.#nextPt;
   }
 
   set prevPt(prevPt: AnyFnPtInstance | undefined) {
-    this.props = {
-      ...this.props,
-      prevPt,
-    };
+    this.#prevPt = prevPt;
+    this.notify();
   }
   set nextPt(nextPt: AnyFnPtInstance | undefined) {
-    this.props = {
-      ...this.props,
-      nextPt,
-    };
+    this.#nextPt = nextPt;
+    this.notify();
   }
 
-  getRangeX(): Range {
+  get rangeX(): Range {
     if (!this.prevPt || !this.nextPt)
       return [this.#initialCoord[0], this.#initialCoord[0]];
     return [this.prevPt.coord[0], this.nextPt.coord[0]];

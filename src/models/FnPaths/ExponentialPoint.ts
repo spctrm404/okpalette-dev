@@ -1,25 +1,20 @@
 import type { Coord, ExponentialPtObsProps } from './FnPath.type';
 import { FnPoint } from './FnPoint';
 
-export class ExponentialPoint
-  extends FnPoint<ExponentialPtObsProps>
-  implements ExponentialPtObsProps
-{
+export class ExponentialPoint extends FnPoint<ExponentialPtObsProps> {
+  #exponent: number;
   constructor(coord: Coord, exponent: number) {
     super(coord);
+    this.#exponent = exponent;
     this.props = {
-      ...this.props,
-      exponent,
-    };
+      getExponent: () => this.exponent,
+    } as Partial<ExponentialPtObsProps>;
   }
 
   get exponent(): number {
-    return this.props.exponent;
+    return this.#exponent;
   }
   set exponent(exponent: number) {
-    this.props = {
-      ...this.props,
-      exponent,
-    };
+    this.#exponent = exponent;
   }
 }

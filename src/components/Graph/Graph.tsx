@@ -22,8 +22,7 @@ const Graph = ({
   thumbDisplaySize,
 }: GraphProps) => {
   const elemRef = useRef<SVGSVGElement>(null);
-  const elemSizeStates = useState<Vec2>([0, 0]);
-  const [elemSizeState, setElemSizeState] = elemSizeStates;
+  const [elemSizeState, setElemSizeState] = useState<Vec2>([0, 0]);
   useEffect(() => {
     const observingTarget = elemRef.current;
     if (!observingTarget) return;
@@ -69,16 +68,21 @@ const Graph = ({
       ];
     const firstX = paths.getPoint(0)!.coord[0];
     const lastX = paths.getPoint(paths.pointCnt - 1)!.coord[0];
-    const yVals = paths.points.map((aPoint) => aPoint.coord[1]);
-    const minY = Math.min(...yVals);
-    const maxY = Math.max(...yVals);
+    const ys = paths.points.map((aPoint) => aPoint.coord[1]);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
     return [
       [firstX, minY],
       [lastX, maxY],
     ];
   };
-  const boundFromPathRef = useRef<Mat2>(getBoundFromPath());
-  const usedBound = bound || boundFromPathRef.current;
+  const boundFromPath = useRef<Mat2>(getBoundFromPath()).current;
+  const usedBound = bound
+    ? [
+        [boundFromPath[0][0], bound[0][1]],
+        [boundFromPath[1][0], bound[1][1]],
+      ]
+    : boundFromPath;
   const [minBound, maxBound] = usedBound;
   const coordToPos = useCallback(
     (coord: Coord): Coord => {

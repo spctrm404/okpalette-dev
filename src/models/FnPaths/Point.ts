@@ -1,36 +1,36 @@
 import type { Coord, PointObsProps } from './FnPath.type';
 import { Observable } from '@/models/Observable';
 
-export class Point<T extends PointObsProps = PointObsProps>
-  extends Observable<T>
-  implements PointObsProps
-{
+export class Point<
+  T extends PointObsProps = PointObsProps
+> extends Observable<T> {
+  #coord: Coord;
+  #id: string;
+
   constructor(coord: Coord) {
     const initial: T = {
-      coord,
-      id: crypto.randomUUID(),
+      getCoord: () => this.coord,
+      getId: () => this.id,
     } as T;
     super(initial);
+    this.#coord = coord;
+    this.#id = crypto.randomUUID();
   }
 
   get coord(): Coord {
-    return this.props.coord;
+    return this.#coord;
   }
   set coord(coord: Coord) {
-    this.props = {
-      ...this.props,
-      coord,
-    };
+    this.#coord = coord;
+    this.notify();
   }
 
   get id(): string {
-    return this.props.id;
+    return this.#id;
   }
   set id(id: string) {
-    this.props = {
-      ...this.props,
-      id,
-    };
+    this.#id = id;
+    this.notify();
   }
 
   static add([ax, ay]: Coord, [bx, by]: Coord): Coord {

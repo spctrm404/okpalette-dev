@@ -135,8 +135,8 @@ const Thumb = ({
         cy={usedPosY}
         r={0.5 * thumbDisplaySize}
         fill="#fff"
-        stroke="transparent"
-        strokeWidth="0"
+        stroke="none"
+        strokeWidth={0}
       />
       <circle
         className={clsx(classes.interaction)}

@@ -4,9 +4,7 @@ import type { AnyPtInstance, AnyPtObsProps } from '@/models/FnPaths';
 export function usePoint(point: AnyPtInstance | undefined) {
   const pointRef = useRef<AnyPtInstance | undefined>(point);
   const unsubscribeRef = useRef<() => void | undefined>(undefined);
-  const [pointObservableState, setPointObservableState] = useState<
-    AnyPtObsProps | undefined
-  >(point?.props);
+  const [props, setProps] = useState<AnyPtObsProps | undefined>(point?.props);
 
   useEffect(() => {
     if (!point) return;
@@ -14,10 +12,8 @@ export function usePoint(point: AnyPtInstance | undefined) {
       unsubscribeRef.current?.();
       pointRef.current = point;
     }
-    const observer = {
-      update: (props: AnyPtObsProps) => {
-        setPointObservableState(props);
-      },
+    const observer = (props: AnyPtObsProps) => {
+      setProps(props);
     };
     unsubscribeRef.current = point.subscribe(observer);
     return () => {
@@ -25,5 +21,5 @@ export function usePoint(point: AnyPtInstance | undefined) {
     };
   }, [point]);
 
-  return pointObservableState;
+  return props;
 }
