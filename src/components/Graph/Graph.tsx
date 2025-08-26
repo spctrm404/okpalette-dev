@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Mat2, Vec2 } from '@/types';
 import { type Coord, FnPaths } from '@/models/FnPaths';
 import { clamp, map } from '@/utils';
 import { THUMB_INTERACTION_SIZE, THUMB_DISPLAY_SIZE } from './Graph.constants';
 import { GraphProvider } from './Graph.provider';
-import Fn from './Graph.Fn';
 import Link from './Graph.Link';
 import Node from './Graph.Node';
+import Fn from './Graph.Fn';
 
 type GraphProps = {
   paths: FnPaths;
@@ -114,6 +114,31 @@ const Graph = ({
     [minPosX, minPosY, maxPosX, maxPosY]
   );
 
+  const links = useMemo(
+    () =>
+      paths.points.map((aPoint, idx) => {
+        if (idx === 0) return;
+        return (
+          <Link
+            key={`graph-link-${aPoint.id}`}
+            beginPt={paths.getPoint(idx - 1)!}
+            endPt={aPoint}
+            idx={idx}
+          />
+        );
+      }),
+    [paths]
+  );
+  const nodes = useMemo(
+    () =>
+      paths.points.map((aPoint, idx) => {
+        return (
+          <Node key={`graph-point-${aPoint.id}`} point={aPoint} idx={idx} />
+        );
+      }),
+    [paths]
+  );
+
   return (
     <svg
       ref={elemRef}
@@ -146,23 +171,9 @@ const Graph = ({
           height={Math.max(paddedHeight, 0)}
           fill="grey"
         />
-        <Fn paths={paths} x={30} />
-        {paths.points.map((aPoint, idx) => {
-          if (idx === 0) return null;
-          return (
-            <Link
-              key={`graph-link-${aPoint.id}`}
-              beginPt={paths.getPoint(idx - 1)!}
-              endPt={aPoint}
-              idx={idx}
-            />
-          );
-        })}
-        {paths.points.map((aPoint, idx) => {
-          return (
-            <Node key={`graph-point-${aPoint.id}`} point={aPoint} idx={idx} />
-          );
-        })}
+        {links}
+        <Fn paths={paths} />
+        {nodes}
       </GraphProvider>
     </svg>
   );

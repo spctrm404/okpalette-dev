@@ -33,7 +33,7 @@ const Fn = ({ paths }: FnProps) => {
   const [[minPosX, minPosY], [maxPosX, maxPosY]] = posBound;
 
   return (
-    <g>
+    <>
       <rect
         x={minPosX}
         y={maxPosY}
@@ -52,7 +52,7 @@ const Fn = ({ paths }: FnProps) => {
           strokeDasharray="4 2"
         />
       ) : null}
-    </g>
+    </>
   );
 };
 
