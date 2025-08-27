@@ -1,17 +1,13 @@
-import type {
-  AnyFnPtInstance,
-  Coord,
-  FnPtObsProps,
-  Range,
-} from './FnPath.type';
+import type { Vec2 } from '@/types';
+import type { AnyFnPtInstance, FnPtObsProps } from './FnPath.type';
 import { Point } from './Point';
 
 export class FnPoint<T extends FnPtObsProps = FnPtObsProps> extends Point<T> {
-  #initialCoord: Coord;
+  #initialCoord: Vec2;
   #prevPt: AnyFnPtInstance | undefined;
   #nextPt: AnyFnPtInstance | undefined;
 
-  constructor(coord: Coord) {
+  constructor(coord: Vec2) {
     super(coord);
     this.#initialCoord = coord;
     this.#prevPt = undefined;
@@ -39,7 +35,7 @@ export class FnPoint<T extends FnPtObsProps = FnPtObsProps> extends Point<T> {
     this.notify();
   }
 
-  get rangeX(): Range {
+  get rangeX(): Vec2 {
     if (!this.prevPt || !this.nextPt)
       return [this.#initialCoord[0], this.#initialCoord[0]];
     return [this.prevPt.coord[0], this.nextPt.coord[0]];

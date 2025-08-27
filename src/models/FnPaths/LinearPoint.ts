@@ -1,8 +1,9 @@
-import type { Coord, LinearPtObsProps } from './FnPath.type';
+import type { Vec2 } from '@/types';
+import type { LinearPtObsProps } from './FnPath.type';
 import { FnPoint } from './FnPoint';
 
 export class LinearPoint extends FnPoint<LinearPtObsProps> {
-  constructor(coord: Coord) {
+  constructor(coord: Vec2) {
     super(coord);
   }
 }

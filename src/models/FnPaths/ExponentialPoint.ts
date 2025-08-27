@@ -1,9 +1,10 @@
-import type { Coord, ExponentialPtObsProps } from './FnPath.type';
+import type { Vec2 } from '@/types';
+import type { ExponentialPtObsProps } from './FnPath.type';
 import { FnPoint } from './FnPoint';
 
 export class ExponentialPoint extends FnPoint<ExponentialPtObsProps> {
   #exponent: number;
-  constructor(coord: Coord, exponent: number) {
+  constructor(coord: Vec2, exponent: number) {
     super(coord);
     this.#exponent = exponent;
     this.props = {

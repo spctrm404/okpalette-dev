@@ -1,13 +1,14 @@
-import type { Coord, PointObsProps } from './FnPath.type';
+import type { Vec2 } from '@/types';
+import type { PointObsProps } from './FnPath.type';
 import { Observable } from '@/models/Observable';
 
 export class Point<
   T extends PointObsProps = PointObsProps
 > extends Observable<T> {
-  #coord: Coord;
+  #coord: Vec2;
   #id: string;
 
-  constructor(coord: Coord) {
+  constructor(coord: Vec2) {
     const initial: T = {
       getCoord: () => this.coord,
       getId: () => this.id,
@@ -17,10 +18,10 @@ export class Point<
     this.#id = crypto.randomUUID();
   }
 
-  get coord(): Coord {
+  get coord(): Vec2 {
     return this.#coord;
   }
-  set coord(coord: Coord) {
+  set coord(coord: Vec2) {
     this.#coord = coord;
     this.notify();
   }
@@ -33,10 +34,10 @@ export class Point<
     this.notify();
   }
 
-  static add([ax, ay]: Coord, [bx, by]: Coord): Coord {
+  static add([ax, ay]: Vec2, [bx, by]: Vec2): Vec2 {
     return [ax + bx, ay + by];
   }
-  static sub([ax, ay]: Coord, [bx, by]: Coord): Coord {
+  static sub([ax, ay]: Vec2, [bx, by]: Vec2): Vec2 {
     return [ax - bx, ay - by];
   }
 }

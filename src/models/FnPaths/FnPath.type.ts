@@ -4,22 +4,19 @@ import type { BezierPoint } from './BezierPoint';
 import type { ExponentialPoint } from './ExponentialPoint';
 import type { ControlPoint } from './ControlPoint';
 
-export type Coord = Vec2;
-export type Range = Vec2;
-
 export interface PointObsProps {
-  getCoord: () => Coord;
+  getCoord: () => Vec2;
   getId: () => string;
 }
 export interface FnPtObsProps extends PointObsProps {
   getPrevPt: () => AnyFnPtInstance | undefined;
   getNextPt: () => AnyFnPtInstance | undefined;
-  getRangeX: () => Range;
+  getRangeX: () => Vec2;
 }
 export interface LinearPtObsProps extends FnPtObsProps {
   getPrevPt: () => AnyFnPtInstance | undefined;
   getNextPt: () => AnyFnPtInstance | undefined;
-  getRangeX: () => Range;
+  getRangeX: () => Vec2;
 }
 export interface ControlPtObsProps extends PointObsProps {
   getParentPt: () => BezierPoint;
@@ -28,7 +25,7 @@ export interface ControlPtObsProps extends PointObsProps {
   isInitialized: () => boolean;
   isUsable: () => boolean;
   isActive: () => boolean;
-  getAbsCoord: () => Coord;
+  getAbsCoord: () => Vec2;
 }
 export interface BezierPtObsProps extends FnPtObsProps {
   getPrevCp: () => ControlPoint;

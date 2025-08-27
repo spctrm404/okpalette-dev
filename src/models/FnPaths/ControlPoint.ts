@@ -1,16 +1,17 @@
-import type { AnyFnPtInstance, Coord, ControlPtObsProps } from './FnPath.type';
+import type { Vec2 } from '@/types';
+import type { AnyFnPtInstance, ControlPtObsProps } from './FnPath.type';
 import type { BezierPoint } from './BezierPoint';
 import { Point } from './Point';
 import { map } from '@/utils';
 
 export class ControlPoint extends Point<ControlPtObsProps> {
-  #initialAbsCoord: Coord;
+  #initialAbsCoord: Vec2;
   #parentPt: BezierPoint;
   #neighborPt: AnyFnPtInstance | undefined;
   #twinPt: ControlPoint | undefined;
   #isInitialized = false;
 
-  constructor(parentPt: BezierPoint, initialAbsCoord: Coord) {
+  constructor(parentPt: BezierPoint, initialAbsCoord: Vec2) {
     super([0, 0]);
     this.#initialAbsCoord = initialAbsCoord;
     this.#parentPt = parentPt;
@@ -59,7 +60,7 @@ export class ControlPoint extends Point<ControlPtObsProps> {
     return x !== 0 || y !== 0;
   }
 
-  get absCoord(): Coord {
+  get absCoord(): Vec2 {
     if (!this.neighborPt) return this.#initialAbsCoord;
     return map(
       this.coord,
@@ -67,9 +68,9 @@ export class ControlPoint extends Point<ControlPtObsProps> {
       [1, 1],
       this.parentPt.coord,
       this.neighborPt.coord
-    ) as Coord;
+    ) as Vec2;
   }
-  set absCoord(absCoord: Coord) {
+  set absCoord(absCoord: Vec2) {
     if (!this.neighborPt) return;
     this.coord = map(
       absCoord,
@@ -77,7 +78,7 @@ export class ControlPoint extends Point<ControlPtObsProps> {
       this.neighborPt.coord,
       [0, 0],
       [1, 1]
-    ) as Coord;
+    ) as Vec2;
     this.notify();
   }
 
@@ -90,7 +91,7 @@ export class ControlPoint extends Point<ControlPtObsProps> {
       this.neighborPt.coord,
       [0, 0],
       [1, 1]
-    ) as Coord;
+    ) as Vec2;
   }
 
   syncTwin(syncLength = false): void {
@@ -112,7 +113,7 @@ export class ControlPoint extends Point<ControlPtObsProps> {
         px + length * Math.cos(angle),
         py + length * Math.sin(angle),
       ];
-      this.twinPt.absCoord = angleSyncedCoord as Coord;
+      this.twinPt.absCoord = angleSyncedCoord as Vec2;
     }
   }
 }

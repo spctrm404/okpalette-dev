@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   type AnyFnPtInstance,
   type AnyFnPtObsProps,
@@ -59,4 +59,4 @@ const Link = ({ beginPt, endPt, idx }: LinkProps) => {
   return <path d={d} fill="none" stroke="red" strokeWidth={1} />;
 };
 
-export default Link;
+export default React.memo(Link);

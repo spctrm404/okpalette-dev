@@ -1,9 +1,9 @@
-import { useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
+import type { Vec2 } from '@/types';
 import {
   type AnyFnPtInstance,
   type AnyFnPtObsProps,
   type ControlPtObsProps,
-  type Range,
   BezierPoint,
 } from '@/models/FnPaths';
 import { usePoint } from '@/hooks/FnPaths';
@@ -32,6 +32,10 @@ const Node = ({ point, idx }: PointProps) => {
   const nextCpProps = usePoint(nextCp) as ControlPtObsProps | undefined;
 
   const pos = coordToPos(ptProps.getCoord());
+
+  const handleThumbSelect = useCallback(() => {
+    console.log(`select point idx:${idx}`);
+  }, [idx]);
 
   const controlPt = useMemo(() => {
     if (!prevCpProps?.isActive() && !nextCpProps?.isActive()) return;
@@ -67,11 +71,11 @@ const Node = ({ point, idx }: PointProps) => {
               rangeX: [
                 prevPtProps.getCoord()[0],
                 ptProps.getCoord()[0],
-              ] as Range,
+              ] as Vec2,
               rangeY: [
                 prevPtProps.getCoord()[1],
                 ptProps.getCoord()[1],
-              ] as Range,
+              ] as Vec2,
             })}
           />
         )}
@@ -85,11 +89,11 @@ const Node = ({ point, idx }: PointProps) => {
               rangeX: [
                 nextPtProps.getCoord()[0],
                 ptProps.getCoord()[0],
-              ] as Range,
+              ] as Vec2,
               rangeY: [
                 nextPtProps.getCoord()[1],
                 ptProps.getCoord()[1],
-              ] as Range,
+              ] as Vec2,
             })}
           />
         )}
@@ -107,17 +111,33 @@ const Node = ({ point, idx }: PointProps) => {
     pos,
   ]);
 
+  const handleThumbMoving = useCallback(
+    (newCoord: Vec2) => {
+      point.coord = newCoord;
+    },
+    [point]
+  );
+
   return (
     <>
       {controlPt}
       <Thumb
         coord={ptProps.getCoord()}
         tabIndex={idx}
-        onMoving={(newVal) => {
-          point.coord = newVal;
-        }}
         rangeX={ptProps.getRangeX()}
+        onMoving={handleThumbMoving}
+        onSelect={handleThumbSelect}
       />
+      <text
+        x={pos[0]}
+        y={pos[1] - 20}
+        fontSize={12}
+        fill="black"
+        textAnchor="middle"
+        style={{ userSelect: 'none' }}
+      >
+        {renderCntRef.current}
+      </text>
       <text
         x={pos[0]}
         y={pos[1] - 8}
@@ -126,10 +146,10 @@ const Node = ({ point, idx }: PointProps) => {
         textAnchor="middle"
         style={{ userSelect: 'none' }}
       >
-        {renderCntRef.current}
+        {`${point.coord[0].toFixed(2)}, ${point.coord[1].toFixed(2)}`}
       </text>
     </>
   );
 };
 
-export default Node;
+export default React.memo(Node);

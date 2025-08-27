@@ -1,46 +1,42 @@
 import { useMemo } from 'react';
-import type { Mat2 } from '@/types';
-import type { Coord } from '@/models/FnPaths';
 import { type GraphContextValue, GraphContext } from './Graph.context';
-import type { Vec2 } from '@/utils/colour/types';
 
-type GraphProviderProps = {
+type GraphProviderProps = GraphContextValue & {
   children: React.ReactNode;
-  coordToPos: (coord: Coord) => Coord;
-  posToCoord: (pos: Coord) => Coord;
-  clampPos: (pos: Coord) => Coord;
-  paddedSize: Vec2;
-  posBoundary: Mat2;
-  thumbInteractionSize: number;
-  thumbDisplaySize: number;
 };
 
 export function GraphProvider({
   children,
+  observable,
   coordToPos,
   posToCoord,
   clampPos,
+  padding,
   paddedSize,
-  posBoundary,
+  posBound,
   thumbInteractionSize,
   thumbDisplaySize,
 }: GraphProviderProps) {
   const contextValue = useMemo<GraphContextValue>(
     () => ({
+      observable,
       coordToPos,
       posToCoord,
       clampPos,
+      padding,
       paddedSize,
-      posBoundary,
+      posBound,
       thumbInteractionSize,
       thumbDisplaySize,
     }),
     [
+      observable,
       coordToPos,
       posToCoord,
       clampPos,
+      padding,
       paddedSize,
-      posBoundary,
+      posBound,
       thumbInteractionSize,
       thumbDisplaySize,
     ]

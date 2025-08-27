@@ -1,11 +1,12 @@
-import type { AnyFnPtInstance, Coord, BezierPtObsProps } from './FnPath.type';
+import type { Vec2 } from '@/types';
+import type { AnyFnPtInstance, BezierPtObsProps } from './FnPath.type';
 import { FnPoint } from './FnPoint';
 import { ControlPoint } from './ControlPoint';
 
 export class BezierPoint extends FnPoint<BezierPtObsProps> {
   #prevCp: ControlPoint;
   #nextCp: ControlPoint;
-  constructor(coord: Coord, prevCp?: Coord, nextCp?: Coord) {
+  constructor(coord: Vec2, prevCp?: Vec2, nextCp?: Vec2) {
     super(coord);
     this.#prevCp = new ControlPoint(this, prevCp || this.coord);
     this.#nextCp = new ControlPoint(this, nextCp || this.coord);

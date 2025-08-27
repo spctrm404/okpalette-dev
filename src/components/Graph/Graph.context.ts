@@ -1,13 +1,16 @@
 import { createContext, useContext } from 'react';
-import type { Mat2, Vec2 } from '@/types/math';
-import type { Coord } from '@/models/FnPaths';
+import type { Mat2, Vec2 } from '@/types';
+import type { Observable } from '@/models/Observable';
+import type { ObsProps } from './Graph';
 
 export type GraphContextValue = {
-  coordToPos: (coord: Coord) => Coord;
-  posToCoord: (pos: Coord) => Coord;
-  clampPos: (pos: Coord) => Coord;
+  observable: Observable<ObsProps>;
+  coordToPos: (coord: Vec2) => Vec2;
+  posToCoord: (pos: Vec2) => Vec2;
+  clampPos: (pos: Vec2) => Vec2;
+  padding: number;
   paddedSize: Vec2;
-  posBoundary: Mat2;
+  posBound: Mat2;
   thumbInteractionSize: number;
   thumbDisplaySize: number;
 };
