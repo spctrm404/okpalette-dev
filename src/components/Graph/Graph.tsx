@@ -19,6 +19,7 @@ type GraphProps = {
   coordRangeY?: Vec2;
   thumbInteractionSize?: number;
   thumbDisplaySize?: number;
+  onSelectThumb?: (index: number) => void;
 };
 
 const Graph = ({
@@ -26,6 +27,7 @@ const Graph = ({
   coordRangeY,
   thumbInteractionSize,
   thumbDisplaySize,
+  onSelectThumb,
 }: GraphProps) => {
   const elem = useRef<SVGSVGElement>(null);
   const [elemSize, setElemSize] = useState<Vec2>([0, 0]);
@@ -140,10 +142,15 @@ const Graph = ({
     () =>
       paths.points.map((aPoint, idx) => {
         return (
-          <Node key={`graph-point-${aPoint.id}`} point={aPoint} idx={idx} />
+          <Node
+            key={`graph-point-${aPoint.id}`}
+            point={aPoint}
+            idx={idx}
+            onSelectThumb={onSelectThumb}
+          />
         );
       }),
-    [paths]
+    [paths, onSelectThumb]
   );
 
   const observable = useRef<Observable<ObsProps>>(

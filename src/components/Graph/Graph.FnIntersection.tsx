@@ -9,8 +9,6 @@ type FnProps = {
 };
 
 const FnIntersection = ({ paths }: FnProps) => {
-  console.log(`render: FnIntersection`);
-
   const pathProps = usePaths(paths)!;
   const { coordToPos, posToCoord, padding, paddedSize, posBound, observable } =
     useGraph();

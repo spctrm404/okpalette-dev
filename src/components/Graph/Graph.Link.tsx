@@ -16,8 +16,6 @@ type LinkProps = {
 };
 
 const Link = ({ beginPt, endPt, idx }: LinkProps) => {
-  console.log(`render: link${idx}`);
-
   const { coordToPos } = useGraph();
 
   const cp1 = beginPt instanceof BezierPoint ? beginPt.nextCp : undefined;

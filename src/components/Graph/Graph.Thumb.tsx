@@ -23,8 +23,6 @@ const Thumb = ({
   onMoving,
   onSelect,
 }: ThumbProps) => {
-  console.log(`render: thumb`);
-
   const {
     coordToPos,
     posToCoord,

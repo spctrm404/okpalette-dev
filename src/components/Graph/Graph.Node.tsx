@@ -13,10 +13,10 @@ import Thumb from './Graph.Thumb';
 type PointProps = {
   point: AnyFnPtInstance;
   idx: number;
+  onSelectThumb?: (index: number) => void;
 };
 
-const Node = ({ point, idx }: PointProps) => {
-  console.log(`render: node${idx}`);
+const Node = ({ point, idx, onSelectThumb }: PointProps) => {
   const renderCntRef = useRef(0);
   renderCntRef.current++;
 
@@ -32,10 +32,6 @@ const Node = ({ point, idx }: PointProps) => {
   const nextCpProps = usePoint(nextCp) as ControlPtObsProps | undefined;
 
   const pos = coordToPos(ptProps.getCoord());
-
-  const handleThumbSelect = useCallback(() => {
-    console.log(`select point idx:${idx}`);
-  }, [idx]);
 
   const controlPt = useMemo(() => {
     if (!prevCpProps?.isActive() && !nextCpProps?.isActive()) return;
@@ -126,7 +122,7 @@ const Node = ({ point, idx }: PointProps) => {
         tabIndex={idx}
         rangeX={ptProps.getRangeX()}
         onMoving={handleThumbMoving}
-        onSelect={handleThumbSelect}
+        onSelect={() => onSelectThumb?.(idx)}
       />
       <text
         x={pos[0]}
