@@ -7,6 +7,7 @@ import { GraphProvider } from './Graph.provider';
 import Link from './Graph.Link';
 import Node from './Graph.Node';
 import FnIntersection from './Graph.FnIntersection';
+import { GraphObservable } from './Graph.Observable';
 
 type GraphProps = {
   paths: FnPaths;
@@ -116,12 +117,6 @@ const Graph = ({
     [minPosX, minPosY, maxPosX, maxPosY]
   );
 
-  const pointerPosRef = useRef<Coord | undefined>(undefined);
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    const { offsetX, offsetY } = e.nativeEvent;
-    pointerPosRef.current = [offsetX, offsetY];
-  }, []);
-
   const links = useMemo(
     () =>
       paths.points.map((aPoint, idx) => {
@@ -147,6 +142,10 @@ const Graph = ({
     [paths]
   );
 
+  const graphObservable = useRef<GraphObservable>(
+    new GraphObservable()
+  ).current;
+
   return (
     <svg
       ref={elemRef}
@@ -160,7 +159,9 @@ const Graph = ({
         width: '100%',
         height: '100%',
       }}
-      onPointerMove={handlePointerMove}
+      onPointerMove={(e: React.PointerEvent) => {
+        graphObservable.handlePointerMove(e);
+      }}
     >
       <GraphProvider
         coordToPos={coordToPos}
@@ -181,7 +182,7 @@ const Graph = ({
           height={Math.max(paddedHeight, 0)}
           fill="grey"
         />
-        <FnIntersection paths={paths} />
+        <FnIntersection paths={paths} graphObservable={graphObservable} />
         {links}
         {nodes}
       </GraphProvider>
