@@ -116,6 +116,12 @@ const Graph = ({
     [minPosX, minPosY, maxPosX, maxPosY]
   );
 
+  const pointerPosRef = useRef<Coord | undefined>(undefined);
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    const { offsetX, offsetY } = e.nativeEvent;
+    pointerPosRef.current = [offsetX, offsetY];
+  }, []);
+
   const links = useMemo(
     () =>
       paths.points.map((aPoint, idx) => {
@@ -154,6 +160,7 @@ const Graph = ({
         width: '100%',
         height: '100%',
       }}
+      onPointerMove={handlePointerMove}
     >
       <GraphProvider
         coordToPos={coordToPos}

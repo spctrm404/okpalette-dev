@@ -19,6 +19,7 @@ const FnIntersection = ({ paths }: FnProps) => {
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
+      console.log('Pointer moved');
       const { offsetX } = e.nativeEvent;
       const clampedPosX = clamp(offsetX, minPosX, maxPosX);
       const [x] = posToCoord([clampedPosX, 0]);
