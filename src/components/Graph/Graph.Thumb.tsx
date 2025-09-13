@@ -1,7 +1,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { mergeProps, useHover, useMove, usePress } from 'react-aria';
 import type { Vec2 } from '@/types';
-import { useGraph } from './Graph.context';
+import { useGraphContext } from './Graph.context';
 import classes from './_Thumb.module.scss';
 import clsx from 'clsx';
 import { clamp } from '@/utils';
@@ -29,7 +29,14 @@ const Thumb = ({
     clampPos,
     thumbInteractionSize,
     thumbDisplaySize,
-  } = useGraph();
+  } = useGraphContext();
+
+  const isMoving = useRef(false);
+  const [internalPos, setInternalPos] = useState<Vec2>(coordToPos(coord));
+  useLayoutEffect(() => {
+    if (isMoving.current) return;
+    setInternalPos(coordToPos(coord));
+  }, [coord, coordToPos]);
 
   const constrainPos = useCallback(
     (pos: Vec2): Vec2 => {
@@ -51,14 +58,6 @@ const Thumb = ({
     },
     [rangeX, rangeY, coordToPos, clampPos]
   );
-
-  const isMoving = useRef(false);
-  const [internalPos, setInternalPos] = useState<Vec2>(coordToPos(coord));
-
-  useLayoutEffect(() => {
-    if (isMoving.current) return;
-    setInternalPos(coordToPos(coord));
-  }, [coord, coordToPos]);
 
   const { hoverProps, isHovered } = useHover({
     onHoverStart: () => {},

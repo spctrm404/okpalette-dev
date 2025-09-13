@@ -1,20 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { FnPaths } from '@/models/FnPaths';
-import { usePaths } from '@/hooks/FnPaths';
 import { clamp } from '@/utils';
-import { useGraph } from './Graph.context';
+import { useFnPathsContext } from '@/contexts/FnPaths';
+import { usePaths } from '@/hooks/FnPaths';
+import { useGraphContext } from './Graph.context';
 
-type FnProps = {
-  paths: FnPaths;
-};
+const FnIntersection = () => {
+  const { fnPaths } = useFnPathsContext();
+  const pathProps = usePaths(fnPaths)!;
 
-const FnIntersection = ({ paths }: FnProps) => {
-  const pathProps = usePaths(paths)!;
-  const { coordToPos, posToCoord, padding, paddedSize, posBound, observable } =
-    useGraph();
-
+  const { coordToPos, posToCoord, posBound, observable } = useGraphContext();
   const [x, setX] = useState<number>(0);
-
   useEffect(() => {
     const unsubscribe = observable.subscribe((props) => {
       const [posX] = props.pointerPos;
@@ -28,7 +23,7 @@ const FnIntersection = ({ paths }: FnProps) => {
     };
   }, [posBound, observable, posToCoord]);
 
-  const d = useMemo(() => {
+  const dStr = useMemo(() => {
     const { evaluate } = pathProps;
     const y = evaluate(x);
     const [posX, posY] = coordToPos([x, y!]);
@@ -39,16 +34,8 @@ const FnIntersection = ({ paths }: FnProps) => {
 
   return (
     <>
-      <rect
-        x={padding}
-        y={padding}
-        width={Math.max(paddedSize[0], 0)}
-        height={Math.max(paddedSize[1], 0)}
-        fill="transparent"
-        stroke="none"
-      />
       <path
-        d={d}
+        d={dStr}
         fill="none"
         stroke="black"
         strokeWidth={2}

@@ -1,5 +1,5 @@
 import type { Vec2 } from '@/types';
-import type { PointObsProps } from './FnPath.type';
+import type { PointObsProps } from './FnPaths.type';
 import { Observable } from '@/models/Observable';
 
 export class Point<

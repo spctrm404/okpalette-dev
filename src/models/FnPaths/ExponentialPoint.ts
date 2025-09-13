@@ -1,5 +1,5 @@
 import type { Vec2 } from '@/types';
-import type { ExponentialPtObsProps } from './FnPath.type';
+import type { ExponentialPtObsProps } from './FnPaths.type';
 import { FnPoint } from './FnPoint';
 
 export class ExponentialPoint extends FnPoint<ExponentialPtObsProps> {

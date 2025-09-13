@@ -13,15 +13,13 @@ export interface FnPtObsProps extends PointObsProps {
   getNextPt: () => AnyFnPtInstance | undefined;
   getRangeX: () => Vec2;
 }
-export interface LinearPtObsProps extends FnPtObsProps {
-  getPrevPt: () => AnyFnPtInstance | undefined;
-  getNextPt: () => AnyFnPtInstance | undefined;
-  getRangeX: () => Vec2;
-}
+export type LinearPtObsProps = FnPtObsProps;
 export interface ControlPtObsProps extends PointObsProps {
   getParentPt: () => BezierPoint;
   getNeighborPt: () => AnyFnPtInstance | undefined;
   getTwinPt: () => ControlPoint;
+  getRangeX: () => Vec2;
+  getRangeY: () => Vec2;
   isInitialized: () => boolean;
   isUsable: () => boolean;
   isActive: () => boolean;
@@ -47,10 +45,10 @@ export type AnyPtInstance = AnyFnPtInstance | ControlPoint;
 export type LinearPtArry = [number, number];
 export type BezierPtArry = [number, number, number, number, number, number];
 export type ExponentialPtArry = [number, number, number];
-export type PathsArry = (LinearPtArry | BezierPtArry | ExponentialPtArry)[];
+export type PathArry = (LinearPtArry | BezierPtArry | ExponentialPtArry)[];
 
 export type FnPoints = AnyFnPtInstance[];
-export type Path = [AnyFnPtInstance, AnyFnPtInstance];
+export type FnPath = [AnyFnPtInstance, AnyFnPtInstance];
 
 export interface FnPathsObsProps {
   isInDomain: (x: number) => boolean;

@@ -7,7 +7,7 @@ import {
   BezierPoint,
 } from '@/models/FnPaths';
 import { usePoint } from '@/hooks/FnPaths';
-import { useGraph } from './Graph.context';
+import { useGraphContext } from './Graph.context';
 import Thumb from './Graph.Thumb';
 
 type PointProps = {
@@ -20,91 +20,83 @@ const Node = ({ point, idx, onSelectThumb }: PointProps) => {
   const renderCntRef = useRef(0);
   renderCntRef.current++;
 
-  const { coordToPos } = useGraph();
+  const { coordToPos } = useGraphContext();
 
+  const prevPt = point instanceof BezierPoint ? point.prevPt : undefined;
+  const nextPt = point instanceof BezierPoint ? point.nextPt : undefined;
   const prevCp = point instanceof BezierPoint ? point.prevCp : undefined;
   const nextCp = point instanceof BezierPoint ? point.nextCp : undefined;
-
   const ptProps = usePoint(point)! as AnyFnPtObsProps;
-  const prevPtProps = usePoint(point.prevPt);
-  const nextPtProps = usePoint(point.nextPt);
+  const prevPtProps = usePoint(prevPt);
+  const nextPtProps = usePoint(nextPt);
   const prevCpProps = usePoint(prevCp) as ControlPtObsProps | undefined;
   const nextCpProps = usePoint(nextCp) as ControlPtObsProps | undefined;
 
-  const pos = coordToPos(ptProps.getCoord());
-
-  const controlPt = useMemo(() => {
+  const handlePrevCpMoving = useCallback(
+    (newCoord: Vec2) => {
+      if (prevCp) prevCp.absCoord = newCoord;
+    },
+    [prevCp]
+  );
+  const handleNextCpMoving = useCallback(
+    (newCoord: Vec2) => {
+      if (nextCp) nextCp.absCoord = newCoord;
+    },
+    [nextCp]
+  );
+  const elemControlPt = useMemo(() => {
     if (!prevCpProps?.isActive() && !nextCpProps?.isActive()) return;
-    const [prevCpPosX, prevCpPosY] = prevCpProps?.isActive()
+    const pos = coordToPos(ptProps.getCoord());
+    const prevCpPos = prevCpProps?.isActive()
       ? coordToPos(prevCpProps.getAbsCoord())
       : pos;
-    const [nextCpPosX, nextCpPosY] = nextCpProps?.isActive()
+    const nextCpPos = nextCpProps?.isActive()
       ? coordToPos(nextCpProps.getAbsCoord())
       : pos;
     return (
       <>
         {prevCpProps?.isActive() && (
-          <path
-            d={`M${pos[0]},${pos[1]} L${prevCpPosX},${prevCpPosY}`}
-            stroke="blue"
-            strokeDasharray="4 2"
-          />
+          <>
+            <path
+              d={`M${pos[0]},${pos[1]} L${prevCpPos[0]},${prevCpPos[1]}`}
+              stroke="blue"
+              strokeDasharray="4 2"
+            />
+            <Thumb
+              coord={prevCpProps.getAbsCoord()}
+              onMoving={handlePrevCpMoving}
+              rangeX={prevCpProps.getRangeX()}
+              rangeY={prevCpProps.getRangeY()}
+            />
+          </>
         )}
         {nextCpProps?.isActive() && (
-          <path
-            d={`M${pos[0]},${pos[1]} L${nextCpPosX},${nextCpPosY}`}
-            stroke="blue"
-            strokeDasharray="4 2"
-          />
-        )}
-        {prevCpProps?.isActive() && (
-          <Thumb
-            coord={prevCpProps.getAbsCoord()}
-            onMoving={(newVal) => {
-              if (prevCp) prevCp.absCoord = newVal;
-            }}
-            {...(prevPtProps && {
-              rangeX: [
-                prevPtProps.getCoord()[0],
-                ptProps.getCoord()[0],
-              ] as Vec2,
-              rangeY: [
-                prevPtProps.getCoord()[1],
-                ptProps.getCoord()[1],
-              ] as Vec2,
-            })}
-          />
-        )}
-        {nextCpProps?.isActive() && (
-          <Thumb
-            coord={nextCpProps.getAbsCoord()}
-            onMoving={(newVal) => {
-              if (nextCp) nextCp.absCoord = newVal;
-            }}
-            {...(nextPtProps && {
-              rangeX: [
-                nextPtProps.getCoord()[0],
-                ptProps.getCoord()[0],
-              ] as Vec2,
-              rangeY: [
-                nextPtProps.getCoord()[1],
-                ptProps.getCoord()[1],
-              ] as Vec2,
-            })}
-          />
+          <>
+            <path
+              d={`M${pos[0]},${pos[1]} L${nextCpPos[0]},${nextCpPos[1]}`}
+              stroke="blue"
+              strokeDasharray="4 2"
+            />
+            <Thumb
+              coord={nextCpProps.getAbsCoord()}
+              onMoving={handleNextCpMoving}
+              rangeX={nextCpProps.getRangeX()}
+              rangeY={nextCpProps.getRangeY()}
+            />
+          </>
         )}
       </>
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     coordToPos,
-    nextCp,
-    prevCp,
     ptProps,
     prevPtProps,
     nextPtProps,
     prevCpProps,
     nextCpProps,
-    pos,
+    handlePrevCpMoving,
+    handleNextCpMoving,
   ]);
 
   const handleThumbMoving = useCallback(
@@ -116,7 +108,7 @@ const Node = ({ point, idx, onSelectThumb }: PointProps) => {
 
   return (
     <>
-      {controlPt}
+      {elemControlPt}
       <Thumb
         coord={ptProps.getCoord()}
         tabIndex={idx}
@@ -125,8 +117,8 @@ const Node = ({ point, idx, onSelectThumb }: PointProps) => {
         onSelect={() => onSelectThumb?.(idx)}
       />
       <text
-        x={pos[0]}
-        y={pos[1] - 20}
+        x={coordToPos(ptProps.getCoord())[0]}
+        y={coordToPos(ptProps.getCoord())[1] - 20}
         fontSize={12}
         fill="black"
         textAnchor="middle"
@@ -135,8 +127,8 @@ const Node = ({ point, idx, onSelectThumb }: PointProps) => {
         {renderCntRef.current}
       </text>
       <text
-        x={pos[0]}
-        y={pos[1] - 8}
+        x={coordToPos(ptProps.getCoord())[0]}
+        y={coordToPos(ptProps.getCoord())[1] - 8}
         fontSize={12}
         fill="black"
         textAnchor="middle"

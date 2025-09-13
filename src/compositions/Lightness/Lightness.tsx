@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FnPaths } from '@/models/FnPaths';
+import { FnPathsProvider } from '@/contexts/FnPaths';
 import { GradientGl } from '@/components/GradientGl';
 import { Graph } from '@/components/Graph';
 
 type LightnessProps = {
-  paths: FnPaths;
+  fnPaths: FnPaths;
 };
 
-const Lightness = ({ paths }: LightnessProps) => {
+const Lightness = ({ fnPaths }: LightnessProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const handleSelectThumb = (index: number) => {
@@ -38,12 +39,10 @@ const Lightness = ({ paths }: LightnessProps) => {
           constVal: 0.0,
         }}
       />
-      <Graph
-        paths={paths}
-        coordRangeY={[0, 100]}
-        onSelectThumb={handleSelectThumb}
-      />
-      선택된 인덱스: {selectedIndex}
+      <FnPathsProvider fnPaths={fnPaths}>
+        <Graph coordRangeY={[0, 100]} onSelectThumb={handleSelectThumb} />
+        선택된 인덱스: {selectedIndex}
+      </FnPathsProvider>
     </div>
   );
 };

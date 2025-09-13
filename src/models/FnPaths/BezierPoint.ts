@@ -1,5 +1,5 @@
 import type { Vec2 } from '@/types';
-import type { AnyFnPtInstance, BezierPtObsProps } from './FnPath.type';
+import type { AnyFnPtInstance, BezierPtObsProps } from './FnPaths.type';
 import { FnPoint } from './FnPoint';
 import { ControlPoint } from './ControlPoint';
 

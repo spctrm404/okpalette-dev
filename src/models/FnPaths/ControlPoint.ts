@@ -1,8 +1,8 @@
 import type { Vec2 } from '@/types';
-import type { AnyFnPtInstance, ControlPtObsProps } from './FnPath.type';
+import { clamp, map } from '@/utils';
+import type { AnyFnPtInstance, ControlPtObsProps } from './FnPaths.type';
 import type { BezierPoint } from './BezierPoint';
 import { Point } from './Point';
-import { map } from '@/utils';
 
 export class ControlPoint extends Point<ControlPtObsProps> {
   #initialAbsCoord: Vec2;
@@ -22,11 +22,21 @@ export class ControlPoint extends Point<ControlPtObsProps> {
       getParentPt: () => this.parentPt,
       getNeighborPt: () => this.neighborPt,
       getTwinPt: () => this.twinPt,
+      getRangeX: () => this.rangeX,
+      getRangeY: () => this.rangeY,
       isInitialized: () => this.isInitialized,
       isUsable: () => this.isUsable,
       isActive: () => this.isActive,
       getAbsCoord: () => this.absCoord,
     };
+  }
+
+  get coord(): Vec2 {
+    return super.coord;
+  }
+  set coord(coord: Vec2) {
+    const [x, y] = coord;
+    super.coord = [clamp(x, 0, 1), clamp(y, 0, 1)];
   }
 
   get parentPt(): BezierPoint {
@@ -47,6 +57,15 @@ export class ControlPoint extends Point<ControlPtObsProps> {
   set twinPt(twinPt: ControlPoint) {
     this.#twinPt = twinPt;
     this.notify();
+  }
+
+  get rangeX(): Vec2 {
+    if (!this.neighborPt) return [this.coord[0], this.coord[0]];
+    return [this.neighborPt.coord[0], this.parentPt.coord[0]];
+  }
+  get rangeY(): Vec2 {
+    if (!this.neighborPt) return [this.coord[1], this.coord[1]];
+    return [this.neighborPt.coord[1], this.parentPt.coord[1]];
   }
 
   get isInitialized(): boolean {

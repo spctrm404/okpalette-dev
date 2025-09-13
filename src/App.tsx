@@ -1,5 +1,5 @@
 import { FnPaths } from '@/models/FnPaths';
-import { Lightness } from '@/composition/Lightness';
+import { Lightness } from '@/compositions/Lightness';
 
 const lightnessPath = FnPaths.fromArray([
   [0, 0],
@@ -10,7 +10,7 @@ const lightnessPath = FnPaths.fromArray([
 ]);
 
 function App() {
-  return <Lightness paths={lightnessPath} />;
+  return <Lightness fnPaths={lightnessPath} />;
 }
 
 export default App;

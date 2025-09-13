@@ -5,9 +5,9 @@ import {
   type ControlPtObsProps,
   BezierPoint,
 } from '@/models/FnPaths';
-import { usePoint } from '@/hooks/FnPaths';
 import { map } from '@/utils';
-import { useGraph } from './Graph.context';
+import { usePoint } from '@/hooks/FnPaths';
+import { useGraphContext } from './Graph.context';
 
 type LinkProps = {
   beginPt: AnyFnPtInstance;
@@ -16,7 +16,7 @@ type LinkProps = {
 };
 
 const Link = ({ beginPt, endPt, idx }: LinkProps) => {
-  const { coordToPos } = useGraph();
+  const { coordToPos } = useGraphContext();
 
   const cp1 = beginPt instanceof BezierPoint ? beginPt.nextCp : undefined;
   const cp2 = endPt instanceof BezierPoint ? endPt.prevCp : undefined;

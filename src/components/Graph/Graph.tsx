@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Mat2, Vec2 } from '@/types';
 import { Observable } from '@/models/Observable';
-import { FnPaths } from '@/models/FnPaths';
 import { clamp, map } from '@/utils';
+import { useFnPathsContext } from '@/contexts/FnPaths/context';
 import { THUMB_INTERACTION_SIZE, THUMB_DISPLAY_SIZE } from './Graph.constants';
 import { GraphProvider } from './Graph.provider';
 import Link from './Graph.Link';
@@ -11,11 +11,11 @@ import FnIntersection from './Graph.FnIntersection';
 
 export type ObsProps = {
   pointerPos: Vec2;
+  // 이 부분 사용할지 판단 필요
   selectedPointId: string | null;
 };
 
 type GraphProps = {
-  paths: FnPaths;
   coordRangeY?: Vec2;
   thumbInteractionSize?: number;
   thumbDisplaySize?: number;
@@ -23,12 +23,13 @@ type GraphProps = {
 };
 
 const Graph = ({
-  paths,
   coordRangeY,
   thumbInteractionSize,
   thumbDisplaySize,
   onSelectThumb,
 }: GraphProps) => {
+  const { fnPaths } = useFnPathsContext();
+
   const elem = useRef<SVGSVGElement>(null);
   const [elemSize, setElemSize] = useState<Vec2>([0, 0]);
   useEffect(() => {
@@ -56,19 +57,19 @@ const Graph = ({
   }, [setElemSize]);
 
   const getCoordBoundFromPath = (): Mat2 => {
-    if (paths.pointCnt < 2)
+    if (fnPaths.pointCnt < 2)
       return [
         [0, 0],
         [1, 1],
       ];
-    const firstX = paths.getPoint(0)!.coord[0];
-    const lastX = paths.getPoint(paths.pointCnt - 1)!.coord[0];
-    const ys = paths.points.map((aPoint) => aPoint.coord[1]);
-    const minY = Math.min(...ys);
-    const maxY = Math.max(...ys);
+    const firstCoordX = fnPaths.getPoint(0)!.coord[0];
+    const lastCoordX = fnPaths.getPoint(fnPaths.pointCnt - 1)!.coord[0];
+    const arryCoordY = fnPaths.points.map((aPoint) => aPoint.coord[1]);
+    const minY = Math.min(...arryCoordY);
+    const maxY = Math.max(...arryCoordY);
     return [
-      [firstX, minY],
-      [lastX, maxY],
+      [firstCoordX, minY],
+      [lastCoordX, maxY],
     ];
   };
   const coordBoundFromPath = useRef<Mat2>(getCoordBoundFromPath()).current;
@@ -125,22 +126,22 @@ const Graph = ({
 
   const renderLinks = useMemo(
     () =>
-      paths.points.map((aPoint, idx) => {
+      fnPaths.points.map((aPoint, idx) => {
         if (idx === 0) return;
         return (
           <Link
             key={`graph-link-${aPoint.id}`}
-            beginPt={paths.getPoint(idx - 1)!}
+            beginPt={fnPaths.getPoint(idx - 1)!}
             endPt={aPoint}
             idx={idx}
           />
         );
       }),
-    [paths]
+    [fnPaths]
   );
   const renderNodes = useMemo(
     () =>
-      paths.points.map((aPoint, idx) => {
+      fnPaths.points.map((aPoint, idx) => {
         return (
           <Node
             key={`graph-point-${aPoint.id}`}
@@ -150,7 +151,7 @@ const Graph = ({
           />
         );
       }),
-    [paths, onSelectThumb]
+    [fnPaths, onSelectThumb]
   );
 
   const observable = useRef<Observable<ObsProps>>(
@@ -168,7 +169,7 @@ const Graph = ({
   );
 
   const paddedSize = useMemo<Vec2>(
-    () => [paddedWidth, paddedHeight],
+    () => [Math.max(paddedWidth, 0), Math.max(paddedHeight, 0)],
     [paddedWidth, paddedHeight]
   );
   const posBound = useMemo<Mat2>(
@@ -208,11 +209,11 @@ const Graph = ({
         <rect
           x={padding}
           y={padding}
-          width={Math.max(paddedWidth, 0)}
-          height={Math.max(paddedHeight, 0)}
+          width={paddedSize[0]}
+          height={paddedSize[1]}
           fill="grey"
         />
-        <FnIntersection paths={paths} />
+        <FnIntersection />
         {renderLinks}
         {renderNodes}
       </GraphProvider>

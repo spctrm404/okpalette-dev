@@ -1,5 +1,6 @@
 import type { Vec2 } from '@/types';
-import type { AnyFnPtInstance, FnPtObsProps } from './FnPath.type';
+import { clamp } from '@/utils';
+import type { AnyFnPtInstance, FnPtObsProps } from './FnPaths.type';
 import { Point } from './Point';
 
 export class FnPoint<T extends FnPtObsProps = FnPtObsProps> extends Point<T> {
@@ -17,6 +18,15 @@ export class FnPoint<T extends FnPtObsProps = FnPtObsProps> extends Point<T> {
       getNextPt: () => this.nextPt,
       getRangeX: () => this.rangeX,
     } as Partial<T>;
+  }
+
+  get coord(): Vec2 {
+    return super.coord;
+  }
+  set coord(coord: Vec2) {
+    const [x, y] = coord;
+    const [minX, maxX] = this.rangeX;
+    super.coord = [clamp(x, minX, maxX), y];
   }
 
   get prevPt(): AnyFnPtInstance | undefined {

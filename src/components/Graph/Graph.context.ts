@@ -19,7 +19,7 @@ export const GraphContext = createContext<GraphContextValue | undefined>(
   undefined
 );
 
-export function useGraph() {
+export function useGraphContext() {
   const context = useContext(GraphContext);
   if (!context) throw new Error('useGraph must be used within a GraphProvider');
   return context;

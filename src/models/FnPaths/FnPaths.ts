@@ -1,10 +1,10 @@
 import type {
   AnyFnPtInstance,
   FnPoints,
-  Path,
+  FnPath,
   FnPathsObsProps,
-  PathsArry,
-} from './FnPath.type';
+  PathArry,
+} from './FnPaths.type';
 import { LinearPoint } from './LinearPoint';
 import { BezierPoint } from './BezierPoint';
 import { ExponentialPoint } from './ExponentialPoint';
@@ -38,7 +38,7 @@ export class FnPaths extends Observable<FnPathsObsProps> {
     return this.#points[idx];
   }
 
-  getPath(idx: number): Path | undefined {
+  getPath(idx: number): FnPath | undefined {
     const startPt = this.getPoint(idx);
     const endPt = this.getPoint(idx + 1);
     if (!startPt || !endPt) return;
@@ -201,20 +201,20 @@ export class FnPaths extends Observable<FnPathsObsProps> {
     return y;
   }
 
-  static fromArray(pathsArray: PathsArry): FnPaths {
-    const path = new FnPaths();
-    pathsArray?.forEach((aPointArray) => {
+  static fromArray(pathArry: PathArry): FnPaths {
+    const fnPaths = new FnPaths();
+    pathArry?.forEach((aPointArray) => {
       if (aPointArray.length === 2) {
         const [x, y] = aPointArray;
-        path.addPoint(new LinearPoint([x, y]));
+        fnPaths.addPoint(new LinearPoint([x, y]));
       } else if (aPointArray.length === 3) {
         const [x, y, exponent] = aPointArray;
-        path.addPoint(new ExponentialPoint([x, y], exponent));
+        fnPaths.addPoint(new ExponentialPoint([x, y], exponent));
       } else if (aPointArray.length === 6) {
         const [x, y, pcpX, pcpY, ncpX, ncpY] = aPointArray;
-        path.addPoint(new BezierPoint([x, y], [pcpX, pcpY], [ncpX, ncpY]));
+        fnPaths.addPoint(new BezierPoint([x, y], [pcpX, pcpY], [ncpX, ncpY]));
       }
     });
-    return path;
+    return fnPaths;
   }
 }

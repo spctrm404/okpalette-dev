@@ -1,4 +1,4 @@
-export * from './FnPath.type';
+export * from './FnPaths.type';
 export * from './LinearPoint';
 export * from './BezierPoint';
 export * from './ExponentialPoint';
