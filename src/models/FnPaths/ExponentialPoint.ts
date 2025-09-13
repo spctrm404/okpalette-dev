@@ -9,7 +9,7 @@ export class ExponentialPoint extends FnPoint<ExponentialPtObsProps> {
     this.#exponent = exponent;
     this.props = {
       getExponent: () => this.exponent,
-    } as Partial<ExponentialPtObsProps>;
+    };
   }
 
   get exponent(): number {

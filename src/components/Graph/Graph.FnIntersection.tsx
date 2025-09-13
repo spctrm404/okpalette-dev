@@ -24,7 +24,7 @@ const FnIntersection = () => {
   }, [posBound, observable, posToCoord]);
 
   const dStr = useMemo(() => {
-    const { evaluate } = pathProps;
+    const { fn: evaluate } = pathProps;
     const y = evaluate(x);
     const [posX, posY] = coordToPos([x, y!]);
     const [[minPosX, minPosY]] = posBound;

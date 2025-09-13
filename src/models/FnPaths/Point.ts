@@ -2,9 +2,7 @@ import type { Vec2 } from '@/types';
 import type { PointObsProps } from './FnPaths.type';
 import { Observable } from '@/models/Observable';
 
-export class Point<
-  T extends PointObsProps = PointObsProps
-> extends Observable<T> {
+export class Point<T extends PointObsProps> extends Observable<T> {
   #coord: Vec2;
   #id: string;
 

@@ -62,8 +62,8 @@ const Graph = ({
         [0, 0],
         [1, 1],
       ];
-    const firstCoordX = fnPaths.getPoint(0)!.coord[0];
-    const lastCoordX = fnPaths.getPoint(fnPaths.pointCnt - 1)!.coord[0];
+    const firstCoordX = fnPaths.getPointByIdx(0)!.coord[0];
+    const lastCoordX = fnPaths.getPointByIdx(fnPaths.pointCnt - 1)!.coord[0];
     const arryCoordY = fnPaths.points.map((aPoint) => aPoint.coord[1]);
     const minY = Math.min(...arryCoordY);
     const maxY = Math.max(...arryCoordY);
@@ -131,7 +131,7 @@ const Graph = ({
         return (
           <Link
             key={`graph-link-${aPoint.id}`}
-            beginPt={fnPaths.getPoint(idx - 1)!}
+            beginPt={fnPaths.getPointByIdx(idx - 1)!}
             endPt={aPoint}
             idx={idx}
           />

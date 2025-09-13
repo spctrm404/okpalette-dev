@@ -13,7 +13,6 @@ export interface FnPtObsProps extends PointObsProps {
   getNextPt: () => AnyFnPtInstance | undefined;
   getRangeX: () => Vec2;
 }
-export type LinearPtObsProps = FnPtObsProps;
 export interface ControlPtObsProps extends PointObsProps {
   getParentPt: () => BezierPoint;
   getNeighborPt: () => AnyFnPtInstance | undefined;
@@ -25,6 +24,8 @@ export interface ControlPtObsProps extends PointObsProps {
   isActive: () => boolean;
   getAbsCoord: () => Vec2;
 }
+
+export type LinearPtObsProps = FnPtObsProps;
 export interface BezierPtObsProps extends FnPtObsProps {
   getPrevCp: () => ControlPoint;
   getNextCp: () => ControlPoint;
@@ -42,15 +43,15 @@ export type AnyPtObsProps = AnyFnPtObsProps | ControlPtObsProps;
 export type AnyFnPtInstance = LinearPoint | BezierPoint | ExponentialPoint;
 export type AnyPtInstance = AnyFnPtInstance | ControlPoint;
 
-export type LinearPtArry = [number, number];
-export type BezierPtArry = [number, number, number, number, number, number];
-export type ExponentialPtArry = [number, number, number];
-export type PathArry = (LinearPtArry | BezierPtArry | ExponentialPtArry)[];
+export type ArryLinearPt = [number, number];
+export type ArryBezierPt = [number, number, number, number, number, number];
+export type ArryExponentialPt = [number, number, number];
+export type ArryPath = (ArryLinearPt | ArryBezierPt | ArryExponentialPt)[];
 
 export type FnPoints = AnyFnPtInstance[];
 export type FnPath = [AnyFnPtInstance, AnyFnPtInstance];
 
 export interface FnPathsObsProps {
   isInDomain: (x: number) => boolean;
-  evaluate: (x: number) => number | undefined;
+  fn: (x: number) => number | undefined;
 }

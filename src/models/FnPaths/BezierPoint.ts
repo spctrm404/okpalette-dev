@@ -15,7 +15,7 @@ export class BezierPoint extends FnPoint<BezierPtObsProps> {
     this.props = {
       getPrevCp: () => this.prevCp,
       getNextCp: () => this.nextCp,
-    } as Partial<BezierPtObsProps>;
+    };
   }
 
   get prevPt(): AnyFnPtInstance | undefined {

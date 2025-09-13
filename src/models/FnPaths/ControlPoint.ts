@@ -1,8 +1,8 @@
 import type { Vec2 } from '@/types';
-import { clamp, map } from '@/utils';
 import type { AnyFnPtInstance, ControlPtObsProps } from './FnPaths.type';
 import type { BezierPoint } from './BezierPoint';
 import { Point } from './Point';
+import { clamp, map } from '@/utils';
 
 export class ControlPoint extends Point<ControlPtObsProps> {
   #initialAbsCoord: Vec2;
@@ -60,12 +60,16 @@ export class ControlPoint extends Point<ControlPtObsProps> {
   }
 
   get rangeX(): Vec2 {
-    if (!this.neighborPt) return [this.coord[0], this.coord[0]];
-    return [this.neighborPt.coord[0], this.parentPt.coord[0]];
+    const [parentX] = this.parentPt.coord;
+    if (!this.neighborPt) return [parentX, parentX];
+    const [neighborX] = this.neighborPt.coord;
+    return [neighborX, parentX];
   }
   get rangeY(): Vec2 {
-    if (!this.neighborPt) return [this.coord[1], this.coord[1]];
-    return [this.neighborPt.coord[1], this.parentPt.coord[1]];
+    const [, parentY] = this.parentPt.coord;
+    if (!this.neighborPt) return [parentY, parentY];
+    const [, neighborY] = this.neighborPt.coord;
+    return [neighborY, parentY];
   }
 
   get isInitialized(): boolean {
@@ -98,7 +102,6 @@ export class ControlPoint extends Point<ControlPtObsProps> {
       [0, 0],
       [1, 1]
     ) as Vec2;
-    this.notify();
   }
 
   initializeCoordFromAbsCoord(): void {
@@ -115,12 +118,12 @@ export class ControlPoint extends Point<ControlPtObsProps> {
 
   syncTwin(syncLength = false): void {
     if (!this.twinPt) return;
-    const vec2ToParent = Point.sub(this.parentPt.coord, this.absCoord);
+    const toParentVec2 = Point.sub(this.parentPt.coord, this.absCoord);
     if (syncLength) {
-      const lengthSyncedCoord = Point.add(this.parentPt.coord, vec2ToParent);
-      this.twinPt.absCoord = lengthSyncedCoord;
+      const fullSyncedCoord = Point.add(this.parentPt.coord, toParentVec2);
+      this.twinPt.absCoord = fullSyncedCoord;
     } else {
-      const [toParentX, toParentY] = vec2ToParent;
+      const [toParentX, toParentY] = toParentVec2;
       const angle = Math.atan2(toParentY, toParentX);
       const [fromParentToTwinX, fromParentToTwinY] = Point.sub(
         this.twinPt.absCoord,
@@ -128,11 +131,11 @@ export class ControlPoint extends Point<ControlPtObsProps> {
       );
       const length = Math.hypot(fromParentToTwinX, fromParentToTwinY);
       const [px, py] = this.parentPt.coord;
-      const angleSyncedCoord = [
+      const angleOnlySyncedCoord = [
         px + length * Math.cos(angle),
         py + length * Math.sin(angle),
       ];
-      this.twinPt.absCoord = angleSyncedCoord as Vec2;
+      this.twinPt.absCoord = angleOnlySyncedCoord as Vec2;
     }
   }
 }

@@ -3,13 +3,13 @@ import type {
   FnPoints,
   FnPath,
   FnPathsObsProps,
-  PathArry,
+  ArryPath,
 } from './FnPaths.type';
+import { Observable } from '@/models/Observable';
 import { LinearPoint } from './LinearPoint';
 import { BezierPoint } from './BezierPoint';
 import { ExponentialPoint } from './ExponentialPoint';
 import { getYOnCubicBezier, map } from '@/utils';
-import { Observable } from '@/models/Observable';
 
 export class FnPaths extends Observable<FnPathsObsProps> {
   #points: FnPoints;
@@ -17,7 +17,7 @@ export class FnPaths extends Observable<FnPathsObsProps> {
   constructor() {
     super({
       isInDomain: (x) => this.isInDomain(x),
-      evaluate: (x) => this.evaluate(x),
+      fn: (x) => this.fn(x),
     });
     this.#points = [];
   }
@@ -34,15 +34,18 @@ export class FnPaths extends Observable<FnPathsObsProps> {
     return this.#points.length - 1;
   }
 
-  getPoint(idx: number): AnyFnPtInstance | undefined {
+  getPointByIdx(idx: number): AnyFnPtInstance | undefined {
     return this.#points[idx];
+  }
+  getPointById(id: string): AnyFnPtInstance | undefined {
+    return this.#points.find((pt) => pt.id === id);
   }
 
   getPath(idx: number): FnPath | undefined {
-    const startPt = this.getPoint(idx);
-    const endPt = this.getPoint(idx + 1);
-    if (!startPt || !endPt) return;
-    return [startPt, endPt];
+    const beginPt = this.getPointByIdx(idx);
+    const endPt = this.getPointByIdx(idx + 1);
+    if (!beginPt || !endPt) return;
+    return [beginPt, endPt];
   }
 
   getPointIdx(point: AnyFnPtInstance): number {
@@ -50,42 +53,31 @@ export class FnPaths extends Observable<FnPathsObsProps> {
   }
 
   addPoint(point: AnyFnPtInstance, idx?: number): void {
-    if (idx === undefined) {
-      point.subscribe(() => {
+    point.subscribe(() => {
+      this.notify();
+    });
+    if (point instanceof BezierPoint) {
+      point.prevCp.subscribe(() => {
         this.notify();
       });
-      if (point instanceof BezierPoint) {
-        point.prevCp.subscribe(() => {
-          this.notify();
-        });
-        point.nextCp.subscribe(() => {
-          this.notify();
-        });
-      }
-      this.points.push(point);
-      this.updateLinks(this.pointCnt - 1);
-    } else if (idx >= 0 && idx <= this.pointCnt) {
-      point.subscribe(() => {
+      point.nextCp.subscribe(() => {
         this.notify();
       });
-      if (point instanceof BezierPoint) {
-        point.prevCp.subscribe(() => {
-          this.notify();
-        });
-        point.nextCp.subscribe(() => {
-          this.notify();
-        });
-      }
-      this.points.splice(idx, 0, point);
-      this.updateLinks(idx);
     }
+
+    if (idx !== undefined && idx >= 0 && idx <= this.pointCnt)
+      this.points.splice(idx, 0, point);
+    else this.points.push(point);
+
+    const pointIdx = this.getPointIdx(point);
+    this.updateLinks(pointIdx);
   }
 
   removePoint(targetPt: AnyFnPtInstance): void {
     const targetPtIdx = this.getPointIdx(targetPt);
     if (targetPtIdx < 0) return;
-    const leftPt = this.getPoint(targetPtIdx - 1);
-    const rightPt = this.getPoint(targetPtIdx + 1);
+    const leftPt = this.getPointByIdx(targetPtIdx - 1);
+    const rightPt = this.getPointByIdx(targetPtIdx + 1);
     if (targetPt instanceof BezierPoint) {
       targetPt.prevCp.unsubscribeAll();
       targetPt.nextCp.unsubscribeAll();
@@ -130,9 +122,9 @@ export class FnPaths extends Observable<FnPathsObsProps> {
   }
 
   private updateLinks(idx: number): void {
-    const point = this.getPoint(idx);
-    const leftPt = this.getPoint(idx - 1);
-    const rightPt = this.getPoint(idx + 1);
+    const point = this.getPointByIdx(idx);
+    const leftPt = this.getPointByIdx(idx - 1);
+    const rightPt = this.getPointByIdx(idx + 1);
     if (point) {
       point.prevPt = leftPt;
       point.nextPt = rightPt;
@@ -157,21 +149,21 @@ export class FnPaths extends Observable<FnPathsObsProps> {
 
   isInDomain(x: number): boolean {
     return (
-      x >= this.getPoint(0)!.coord[0] &&
-      x <= this.getPoint(this.pointCnt - 1)!.coord[0]
+      x >= this.getPointByIdx(0)!.coord[0] &&
+      x <= this.getPointByIdx(this.pointCnt - 1)!.coord[0]
     );
   }
 
   private findPathIdxForX(x: number): number | undefined {
     if (!this.isInDomain(x)) return;
     for (let pathIdx = 0; pathIdx < this.pathCnt; pathIdx++) {
-      const startPt = this.getPoint(pathIdx)!;
-      const endPt = this.getPoint(pathIdx + 1)!;
+      const startPt = this.getPointByIdx(pathIdx)!;
+      const endPt = this.getPointByIdx(pathIdx + 1)!;
       if (x >= startPt.coord[0] && x <= endPt.coord[0]) return pathIdx;
     }
   }
 
-  evaluate(x: number): number | undefined {
+  fn(x: number): number | undefined {
     const pathIdx = this.findPathIdxForX(x);
     if (pathIdx === undefined) return;
 
@@ -201,9 +193,9 @@ export class FnPaths extends Observable<FnPathsObsProps> {
     return y;
   }
 
-  static fromArray(pathArry: PathArry): FnPaths {
+  static fromArray(arryPath: ArryPath): FnPaths {
     const fnPaths = new FnPaths();
-    pathArry?.forEach((aPointArray) => {
+    arryPath?.forEach((aPointArray) => {
       if (aPointArray.length === 2) {
         const [x, y] = aPointArray;
         fnPaths.addPoint(new LinearPoint([x, y]));
