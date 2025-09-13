@@ -27,9 +27,9 @@ export function map(
     toMax: number
   ) => {
     if (fromMin === fromMax) return toMin;
-    const normalizedVal = (val - fromMin) / (fromMax - fromMin);
-    const convertedVal = toMin + normalizedVal * (toMax - toMin);
-    return convertedVal;
+    const normalized = (val - fromMin) / (fromMax - fromMin);
+    const mapped = toMin + normalized * (toMax - toMin);
+    return mapped;
   };
   if (
     Array.isArray(val) &&

@@ -1,37 +1,37 @@
-export function clamp(val: number, boundA: number, boundB: number): number;
+export function clamp(val: number, bound1: number, bound2: number): number;
 export function clamp(
   val: number[],
-  boundA: number[],
-  boundB: number[]
+  bound1: number[],
+  bound2: number[]
 ): number[];
 export function clamp(
   val: number | number[],
-  boundA: number | number[],
-  boundB: number | number[]
+  bound1: number | number[],
+  bound2: number | number[]
 ): number | number[] {
-  const map = (val: number, boundA: number, boundB: number) => {
-    const _min = Math.min(boundA, boundB);
-    const _max = Math.max(boundA, boundB);
-    return Math.max(_min, Math.min(_max, val));
+  const map = (val: number, bound1: number, bound2: number) => {
+    const min = Math.min(bound1, bound2);
+    const max = Math.max(bound1, bound2);
+    return Math.max(min, Math.min(max, val));
   };
   if (
     Array.isArray(val) &&
-    Array.isArray(boundA) &&
-    Array.isArray(boundB) &&
-    val.length === boundA.length &&
-    val.length === boundB.length
+    Array.isArray(bound1) &&
+    Array.isArray(bound2) &&
+    val.length === bound1.length &&
+    val.length === bound2.length
   ) {
-    return val.map((v, i) => map(v, boundA[i], boundB[i]));
+    return val.map((v, i) => map(v, bound1[i], bound2[i]));
   } else if (
     typeof val === 'number' &&
-    typeof boundA === 'number' &&
-    typeof boundB === 'number'
+    typeof bound1 === 'number' &&
+    typeof bound2 === 'number'
   ) {
-    return map(val, boundA, boundB);
+    return map(val, bound1, bound2);
   }
   throw new Error(
     `clamp: invalid arguments\nval: ${JSON.stringify(
       val
-    )}\nboundA: ${JSON.stringify(boundA)}\nboundB: ${JSON.stringify(boundB)}`
+    )}\nbound1: ${JSON.stringify(bound1)}\nbound2: ${JSON.stringify(bound2)}`
   );
 }
