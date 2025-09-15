@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FnPaths, FnPathsObsProps } from '@/models/FnPaths';
 
-export function usePaths(paths: FnPaths | undefined) {
+export function useFnPathsObsProps(paths: FnPaths | undefined) {
   const pathsRef = useRef<FnPaths | undefined>(paths);
   const unsubscribeRef = useRef<() => void | undefined>(undefined);
   const [props, setProps] = useState<FnPathsObsProps | undefined>(paths?.props);
@@ -18,6 +18,9 @@ export function usePaths(paths: FnPaths | undefined) {
     unsubscribeRef.current = paths.subscribe(observer);
     return () => {
       unsubscribeRef.current?.();
+      unsubscribeRef.current = undefined;
+      pathsRef.current = undefined;
+      setProps(undefined);
     };
   }, [paths]);
 

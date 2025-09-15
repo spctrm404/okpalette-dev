@@ -6,7 +6,7 @@ import {
   BezierPoint,
 } from '@/models/FnPaths';
 import { map } from '@/utils';
-import { usePoint } from '@/hooks/FnPaths';
+import { usePtObsProps } from '@/hooks/FnPaths';
 import { useGraphContext } from './Graph.context';
 
 type LinkProps = {
@@ -21,10 +21,10 @@ const Link = ({ beginPt, endPt, idx }: LinkProps) => {
   const cp1 = beginPt instanceof BezierPoint ? beginPt.nextCp : undefined;
   const cp2 = endPt instanceof BezierPoint ? endPt.prevCp : undefined;
 
-  const beginPtProps = usePoint(beginPt)! as AnyFnPtObsProps;
-  const cp1Props = usePoint(cp1) as ControlPtObsProps | undefined;
-  const cp2Props = usePoint(cp2) as ControlPtObsProps | undefined;
-  const endPtProps = usePoint(endPt)! as AnyFnPtObsProps;
+  const beginPtProps = usePtObsProps(beginPt)! as AnyFnPtObsProps;
+  const cp1Props = usePtObsProps(cp1) as ControlPtObsProps | undefined;
+  const cp2Props = usePtObsProps(cp2) as ControlPtObsProps | undefined;
+  const endPtProps = usePtObsProps(endPt)! as AnyFnPtObsProps;
 
   const d = useMemo(() => {
     const beginPos = coordToPos(beginPtProps.getCoord());

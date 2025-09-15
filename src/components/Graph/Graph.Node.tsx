@@ -6,7 +6,7 @@ import {
   type ControlPtObsProps,
   BezierPoint,
 } from '@/models/FnPaths';
-import { usePoint } from '@/hooks/FnPaths';
+import { usePtObsProps } from '@/hooks/FnPaths';
 import { useGraphContext } from './Graph.context';
 import Thumb from './Graph.Thumb';
 
@@ -26,11 +26,11 @@ const Node = ({ point, idx, onSelectThumb }: PointProps) => {
   const nextPt = point instanceof BezierPoint ? point.nextPt : undefined;
   const prevCp = point instanceof BezierPoint ? point.prevCp : undefined;
   const nextCp = point instanceof BezierPoint ? point.nextCp : undefined;
-  const ptProps = usePoint(point)! as AnyFnPtObsProps;
-  const prevPtProps = usePoint(prevPt);
-  const nextPtProps = usePoint(nextPt);
-  const prevCpProps = usePoint(prevCp) as ControlPtObsProps | undefined;
-  const nextCpProps = usePoint(nextCp) as ControlPtObsProps | undefined;
+  const ptProps = usePtObsProps(point)! as AnyFnPtObsProps;
+  const prevPtProps = usePtObsProps(prevPt);
+  const nextPtProps = usePtObsProps(nextPt);
+  const prevCpProps = usePtObsProps(prevCp) as ControlPtObsProps | undefined;
+  const nextCpProps = usePtObsProps(nextCp) as ControlPtObsProps | undefined;
 
   const handlePrevCpMoving = useCallback(
     (newCoord: Vec2) => {

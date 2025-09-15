@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { clamp } from '@/utils';
 import { useFnPathsContext } from '@/contexts/FnPaths';
-import { usePaths } from '@/hooks/FnPaths';
+import { useFnPathsObsProps } from '@/hooks/FnPaths';
 import { useGraphContext } from './Graph.context';
 
 const FnIntersection = () => {
   const { fnPaths } = useFnPathsContext();
-  const pathProps = usePaths(fnPaths)!;
+  const pathProps = useFnPathsObsProps(fnPaths)!;
 
   const { coordToPos, posToCoord, posBound, observable } = useGraphContext();
   const [x, setX] = useState<number>(0);
